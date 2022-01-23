@@ -1,4 +1,4 @@
-package frc.team3128.hardware.motor;
+package frc.team3128.hardware.motorcontroller;
 
 // import com.revrobotics.RelativeEncoder;
 // import com.revrobotics.CANSparkMax;
@@ -28,8 +28,8 @@ public class NAR_CANSparkMax extends CANSparkMax implements NAR_EMotor {
 		super(deviceNumber, type);
 
 		encoder = (SparkMaxRelativeEncoder) getEncoder();
-		encoder.setPositionConversionFactor(MotorConstants.SPARKMAX_ENCODER_RESOLUTION); // convert rotations to encoder ticks
-		encoder.setVelocityConversionFactor(MotorConstants.SPARKMAX_RPM_TO_CPS); // convert rpm to nu/s
+		encoder.setPositionConversionFactor(MotorControllerConstants.SPARKMAX_ENCODER_RESOLUTION); // convert rotations to encoder ticks
+		encoder.setVelocityConversionFactor(MotorControllerConstants.SPARKMAX_RPM_TO_CPS); // convert rpm to nu/s
 
 		if(RobotBase.isSimulation()){
 			encoderSim = new SimDeviceSim("CANSparkMax[" + this.getDeviceId() + "] - RelativeEncoder");
@@ -82,7 +82,7 @@ public class NAR_CANSparkMax extends CANSparkMax implements NAR_EMotor {
 	@Override
 	public void follow(NAR_EMotor motor) {
 		if(!(motor instanceof CANSparkMax)) {
-			throw new RuntimeException("bad follow");
+			throw new RuntimeException("Bad follow: NAR_CANSparkMax " + getDeviceId() + " attempted to follow non-CANSparkMax motor controller.");
 		}
 		super.follow((CANSparkMax)motor);
 	}
