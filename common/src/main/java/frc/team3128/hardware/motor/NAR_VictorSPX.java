@@ -1,5 +1,5 @@
 
-package frc.team3128.hardware.motorcontroller;
+package frc.team3128.hardware.motor;
 
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
