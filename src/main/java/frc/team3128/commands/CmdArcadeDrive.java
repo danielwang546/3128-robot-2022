@@ -1,45 +1,41 @@
 package frc.team3128.commands;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.team3128.Constants;
+import frc.team3128.Constants.DriveConstants;
 import frc.team3128.subsystems.NAR_Drivetrain;
 
-public class ArcadeDrive extends CommandBase {
+public class CmdArcadeDrive extends CommandBase {
+
     private final NAR_Drivetrain m_drivetrain;
     private final DoubleSupplier m_xSpeed;
     private final DoubleSupplier m_turn;
     private final DoubleSupplier m_throttle;
+    private final BooleanSupplier m_halfSpeed;
 
-
-    public ArcadeDrive(NAR_Drivetrain drivetrain, DoubleSupplier xSpeed, DoubleSupplier turn, DoubleSupplier throttle) {
+    public CmdArcadeDrive(NAR_Drivetrain drivetrain, DoubleSupplier xSpeed, DoubleSupplier turn, DoubleSupplier throttle, BooleanSupplier halfSpeed) {
         m_drivetrain = drivetrain;
-        addRequirements(m_drivetrain);
-
+        
         m_xSpeed = xSpeed;
         m_turn = turn;
         m_throttle = throttle;
-    }
-    
-    @Override
-    public void initialize() {
+        m_halfSpeed = halfSpeed;
+
+        addRequirements(m_drivetrain);
     }
     
     @Override
     public void execute() {
-        double throttle = (-m_throttle.getAsDouble() + 1) / 2;
-        if(throttle < 0.3)
-            throttle = 0.3;
-        if (throttle > 0.8)
-            throttle = 1;
+        double throttle = m_throttle.getAsDouble();
 
+        if (m_halfSpeed.getAsBoolean()) {
+            throttle *= 0.5;
+        }
 
-        double xSpeed = -m_xSpeed.getAsDouble(); //invert xSpeed
-
-        double turn = Constants.DriveConstants.ARCADE_DRIVE_TURN_MULT * m_turn.getAsDouble();
-        if (Math.abs(turn) < Constants.DriveConstants.ARCADE_DRIVE_TURN_DEADBAND)
-            turn = 0;
+        double xSpeed = m_xSpeed.getAsDouble();
+        double turn = DriveConstants.ARCADE_DRIVE_TURN_MULT * m_turn.getAsDouble();
 
         m_drivetrain.arcadeDrive(xSpeed * throttle, turn * throttle);
     }

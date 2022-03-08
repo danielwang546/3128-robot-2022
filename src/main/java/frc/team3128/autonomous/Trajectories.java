@@ -14,10 +14,7 @@ import edu.wpi.first.math.util.Units;
 import frc.team3128.Constants;
 
 /**
- * 
  * Store trajectories for autonomous. Edit points here. 
- * There are many magic numbers in this class - makes it slightly easier to edit trajectories. With more accurate odometry, we could avoid this.
- * 
  */
 public class Trajectories {
     private static final DifferentialDriveVoltageConstraint autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
@@ -51,4 +48,10 @@ public class Trajectories {
             new Translation2d(Units.inchesToMeters(6), Units.inchesToMeters(-14))),
         new Pose2d(Units.inchesToMeters(50), Units.inchesToMeters(-15), new Rotation2d(0)),
         forwardTrajConfig);
+
+    public static Trajectory driveBack30In = TrajectoryGenerator.generateTrajectory(
+        new Pose2d(0, 0, new Rotation2d(0)),
+        List.of(),
+        new Pose2d(Units.inchesToMeters(-30), 0, new Rotation2d(0)),
+        backwardsTrajConfig);
 }
