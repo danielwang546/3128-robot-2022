@@ -1,19 +1,16 @@
 package frc.team3128.common.hardware.limelight;
 
-import java.util.Arrays;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import java.util.Arrays;
 
 /**
  * Software wrapper to obtain data from and send data to the physical Limelight.
- * 
- * LIMELIGHT CONVENTIONS: - When the target is right of the vertical centerline,
- * tx is positive. - When the target is above the horizontal centerline, ty is
- * positive.
- * 
- * 
- * @author Adham Elarabawy, Mason Holst, Jude Lifset
  *
+ * <p>LIMELIGHT CONVENTIONS: - When the target is right of the vertical centerline, tx is positive.
+ * - When the target is above the horizontal centerline, ty is positive.
+ *
+ * @author Adham Elarabawy, Mason Holst, Jude Lifset
  */
 public class Limelight {
     public String hostname;
@@ -26,14 +23,16 @@ public class Limelight {
     public NetworkTable limelightTable;
 
     /**
-     * 
-     * @param cameraAngle   - The vertical angle of the limelight
-     * @param cameraHeight  - The height off of the ground of the limelight
-     * @param frontDistance - The distance between the front of the robot and the
-     *                      Limelight
-     * @param targetWidth   - The width of the target
+     * @param cameraAngle - The vertical angle of the limelight
+     * @param cameraHeight - The height off of the ground of the limelight
+     * @param frontDistance - The distance between the front of the robot and the Limelight
+     * @param targetWidth - The width of the target
      */
-    public Limelight(String hostname, double cameraAngle, double cameraHeight, double frontDistance,
+    public Limelight(
+            String hostname,
+            double cameraAngle,
+            double cameraHeight,
+            double frontDistance,
             double targetWidth) {
         this.hostname = hostname;
 
@@ -48,10 +47,9 @@ public class Limelight {
     }
 
     /**
-     * Gets the average value of the data value in a certain key output by the
-     * Limelight.
-     * 
-     * @param key        - the LimelightKey corresponding to the desired value.
+     * Gets the average value of the data value in a certain key output by the Limelight.
+     *
+     * @param key - the LimelightKey corresponding to the desired value.
      * @param numSamples - how many samples of the value to average out.
      * @return
      */
@@ -67,9 +65,7 @@ public class Limelight {
         return runningTotal / numSamples;
     }
 
-    /**
-     * Checks to see if the Limelight has a valid target
-     */
+    /** Checks to see if the Limelight has a valid target */
     public boolean hasValidTarget() {
         return getValue(LimelightKey.VALID_TARGET, 1) > 0.99;
     }
@@ -110,7 +106,8 @@ public class Limelight {
         // values)
         for (int a = 0; a < numSamples - 1; a++) {
             for (int b = 0; b < camtranArray.length; b++) {
-                camtranArray[b] += limelightTable.getEntry("camtran").getDoubleArray(new double[6])[b];
+                camtranArray[b] +=
+                        limelightTable.getEntry("camtran").getDoubleArray(new double[6])[b];
             }
         }
         for (String valueKey : LimelightConstants.VALUE_KEYS_PNP) {
@@ -122,8 +119,7 @@ public class Limelight {
     }
 
     public double getYPrime(double targetHeight, int n) {
-        if (!hasValidTarget())
-            return -1;
+        if (!hasValidTarget()) return -1;
 
         return calculateYPrimeFromTY(getValue(LimelightKey.VERTICAL_OFFSET, n), targetHeight);
     }
@@ -133,11 +129,12 @@ public class Limelight {
     }
 
     public double calculateDistToTopTarget(double targetHeight) {
-        if (!hasValidTarget())
-            return -1;
-        double ty = getValue(LimelightKey.VERTICAL_OFFSET, 5) * Math.PI / 180 * 2/3;
+        if (!hasValidTarget()) return -1;
+        double ty = getValue(LimelightKey.VERTICAL_OFFSET, 5) * Math.PI / 180 * 2 / 3;
         double tx = getValue(LimelightKey.HORIZONTAL_OFFSET, 5) * Math.PI / 180;
-        double dist = (targetHeight - cameraHeight) / (Math.tan(ty + cameraAngle)*Math.cos(tx)) - frontDistance;
+        double dist =
+                (targetHeight - cameraHeight) / (Math.tan(ty + cameraAngle) * Math.cos(tx))
+                        - frontDistance;
 
         double transformedDist = 19.4 + 0.243 * dist + 6.26e-3 * dist * dist;
 
@@ -145,8 +142,7 @@ public class Limelight {
     }
 
     public double calculateDistToGroundTarget(double targetHeight) {
-        if (!hasValidTarget())
-            return -1;
+        if (!hasValidTarget()) return -1;
         double ty = getValue(LimelightKey.VERTICAL_OFFSET, 5) * Math.PI / 180;
         return (-targetHeight + cameraHeight) * Math.tan(ty + cameraAngle) - frontDistance;
     }
@@ -162,7 +158,6 @@ public class Limelight {
     public void turnLEDOff() {
         setLEDMode(LEDMode.OFF);
     }
-    
 
     public void setStreamMode(StreamMode mode) {
         limelightTable.getEntry("stream").setNumber(mode.getStream());
@@ -172,9 +167,7 @@ public class Limelight {
         limelightTable.getEntry("pipeline").setNumber(pipeline.getPipeline());
     }
 
-      /**
-     * Set the limelight on the dashboard
-     */
+    /** Set the limelight on the dashboard */
     public double getSelectedPipeline() {
         return limelightTable.getEntry("pipeline").getDouble(0);
     }

@@ -1,29 +1,24 @@
 /**
- * I'm moving our old autos that we're very likely not using ever here. 
- * However, I am lazy and didn't want to do it properly, so this entire 
- * file is commented out. We will decide whether to redo this or simply 
- * get rid of them when we clean up our codebase.
+ * I'm moving our old autos that we're very likely not using ever here. However, I am lazy and
+ * didn't want to do it properly, so this entire file is commented out. We will decide whether to
+ * redo this or simply get rid of them when we clean up our codebase.
  */
 
 /**
- * Daniel's ideas for cleaner autos:
- *  - Define them in a separate class, passing in each necessary subsystem / Limelight
- *    as a constructor parameter. 
- *  - Create a hashmap of strings to trajectories and get trajectories by 
- *    name instead of numerical index.
- *  - Define an enum with the name, command, and initial position for each auto.
- * 
- *  This would probably cut 300-400 lines from RobotContainer, which would be very nice.
- *  Also we should have LEDs because they're pretty funny.
+ * Daniel's ideas for cleaner autos: - Define them in a separate class, passing in each necessary
+ * subsystem / Limelight as a constructor parameter. - Create a hashmap of strings to trajectories
+ * and get trajectories by name instead of numerical index. - Define an enum with the name, command,
+ * and initial position for each auto.
+ *
+ * <p>This would probably cut 300-400 lines from RobotContainer, which would be very nice. Also we
+ * should have LEDs because they're pretty funny.
  */
 
 // package frc.team3128.autonomous;
 
 // public class OldAutos {
 
-    /**
-     * The initial positions will be a pain to get back if we so choose to put these back.
-     */
+    /** The initial positions will be a pain to get back if we so choose to put these back. */
     // initialPoses.put(auto_2BallBot, trajectory[0].getInitialPose());
     // initialPoses.put(auto_2BallMid, trajectory[1].getInitialPose());
     // initialPoses.put(auto_2BallTop, trajectory[2].getInitialPose());
@@ -34,7 +29,6 @@
     // initialPoses.put(auto_4BallTerm, trajectory[13].getInitialPose());
     // initialPoses.put(auto_5Ball, trajectory[15].getInitialPose());
     // initialPoses.put(auto_3BallBack, trajectory[23].getInitialPose());
-
 
 //     //no use
 //     auto_2BallBot = new SequentialCommandGroup(
@@ -65,7 +59,7 @@
 // );
 
 // auto_2BallTop = new SequentialCommandGroup(
-        
+
 //         new WaitCommand(2),
 
 //         //pick up 1 ball
@@ -113,7 +107,7 @@
 
 //         //shoot preload
 //         shootCmd(3500),
-        
+
 //         //pick up two balls
 //         new ParallelDeadlineGroup(
 //             new SequentialCommandGroup(
@@ -143,7 +137,7 @@
 //             ),
 //             new CmdExtendIntakeAndRun(m_intake, m_hopper)
 //         ),
-        
+
 //         trajectoryCmd(19),
 //         trajectoryCmd(20),
 //         new InstantCommand(m_drive::stop, m_drive),
@@ -262,7 +256,7 @@
 //         ),
 
 //         shootCmd(3750),
-        
+
 //         trajectoryCmd(17),
 
 //         new ParallelDeadlineGroup(
@@ -282,4 +276,3 @@
 //         shootCmd(3750)
 // );
 // }
-

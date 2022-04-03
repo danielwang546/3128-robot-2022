@@ -1,10 +1,5 @@
 package frc.team3128.autonomous;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -20,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.team3128.Constants.*;
 import frc.team3128.commands.CmdAlign;
 import frc.team3128.commands.CmdExtendIntake;
 import frc.team3128.commands.CmdExtendIntakeAndRun;
@@ -31,17 +27,19 @@ import frc.team3128.commands.CmdShootDist;
 import frc.team3128.commands.CmdShootRPM;
 import frc.team3128.common.hardware.limelight.Limelight;
 import frc.team3128.common.narwhaldashboard.NarwhalDashboard;
+import frc.team3128.subsystems.Hood;
+import frc.team3128.subsystems.Hopper;
+import frc.team3128.subsystems.Intake;
 import frc.team3128.subsystems.NAR_Drivetrain;
 import frc.team3128.subsystems.Shooter;
 import frc.team3128.subsystems.Shooter.ShooterState;
-import frc.team3128.subsystems.Intake;
-import frc.team3128.subsystems.Hopper;
-import frc.team3128.subsystems.Hood;
-import frc.team3128.Constants.*;
-
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class AutoPrograms {
-    
+
     private class AutoInfo {
         public Command command;
         public Pose2d initialPose;
@@ -71,7 +69,13 @@ public class AutoPrograms {
     private Command auto_5Ball180;
     private Command auto_Billiards;
 
-    public AutoPrograms(NAR_Drivetrain drive, Shooter shooter, Intake intake, Hopper hopper, Hood hood, Limelight shooterLimelight) {
+    public AutoPrograms(
+            NAR_Drivetrain drive,
+            Shooter shooter,
+            Intake intake,
+            Hopper hopper,
+            Hood hood,
+            Limelight shooterLimelight) {
         this.drive = drive;
         this.shooter = shooter;
         this.intake = intake;
@@ -86,7 +90,7 @@ public class AutoPrograms {
 
     private void loadTrajectories() {
         trajectories = new HashMap<String, Trajectory>();
-        
+
         String[] trajectoryNames = {
             "3_Ball_good",
             "S2H2_i",
@@ -103,203 +107,198 @@ public class AutoPrograms {
         };
 
         for (String trajectoryName : trajectoryNames) {
-            Path path = Filesystem.getDeployDirectory().toPath().resolve("paths").resolve(trajectoryName + ".wpilib.json");
+            Path path =
+                    Filesystem.getDeployDirectory()
+                            .toPath()
+                            .resolve("paths")
+                            .resolve(trajectoryName + ".wpilib.json");
             try {
                 trajectories.put(trajectoryName, TrajectoryUtil.fromPathweaverJson(path));
             } catch (IOException ex) {
                 DriverStation.reportError("IOException loading trajectory " + trajectoryName, true);
             }
-        } 
+        }
     }
 
     private void initAutos() {
         autoMap = new LinkedHashMap<String, AutoInfo>();
 
-        auto_1Ball = new SequentialCommandGroup(
-                            alignShootCmd(),
+        auto_1Ball =
+                new SequentialCommandGroup(
+                        alignShootCmd(), trajectoryCmd(Trajectories.driveBack30In));
 
-                            trajectoryCmd(Trajectories.driveBack30In)
-        );
+        auto_2Ball =
+                new SequentialCommandGroup(
+                        new ParallelDeadlineGroup(
+                                trajectoryCmd(Trajectories.twoBallTraj),
+                                new CmdExtendIntakeAndRun(intake, hopper)),
+                        new CmdInPlaceTurn(drive, 180),
+                        alignShootCmd());
 
-        auto_2Ball = new SequentialCommandGroup(
-                            new ParallelDeadlineGroup(
-                                trajectoryCmd(Trajectories.twoBallTraj), 
-                                new CmdExtendIntakeAndRun(intake, hopper)
-                            ),
+        auto_3Ball180 =
+                new SequentialCommandGroup(
+                        shootCmd(), // shootCmd(2800, 19)
+                        new CmdInPlaceTurn(drive, 180),
+                        new ParallelDeadlineGroup(
+                                trajectoryCmd("3_Ball_good"),
+                                new CmdExtendIntakeAndRun(intake, hopper)),
+                        new CmdInPlaceTurn(drive, -50),
+                        alignShootCmd() // shootCmd(3340, 2.5)
+                        );
 
-                            new CmdInPlaceTurn(drive, 180),
+        auto_S2H1 =
+                new SequentialCommandGroup(
 
-                            alignShootCmd()
-        );
+                        // drive and intake ball
+                        new ParallelDeadlineGroup(
+                                trajectoryCmd("S2H2_i"), new CmdExtendIntakeAndRun(intake, hopper)),
 
-        auto_3Ball180 = new SequentialCommandGroup(
-                            shootCmd(), // shootCmd(2800, 19)
+                        // turn and shoot
+                        new CmdInPlaceTurn(drive, 180),
+                        alignShootCmd(),
 
-                            new CmdInPlaceTurn(drive, 180),
-
-                            new ParallelDeadlineGroup(
-                                trajectoryCmd("3_Ball_good"), 
-                                new CmdExtendIntakeAndRun(intake, hopper)
-                            ),
-
-                            new CmdInPlaceTurn(drive, -50),
-
-                            alignShootCmd() // shootCmd(3340, 2.5)
-        );
-
-        auto_S2H1 = new SequentialCommandGroup(
-
-                            //drive and intake ball
-                            new ParallelDeadlineGroup(
-                                trajectoryCmd("S2H2_i"),
-                                new CmdExtendIntakeAndRun(intake, hopper)
-                            ),
-
-                            //turn and shoot
-                            new CmdInPlaceTurn(drive, 180),
-
-                            alignShootCmd(),
-
-                            //turn and hoard first ball
-                            new CmdInPlaceTurn(drive, 90),
-                            new ParallelDeadlineGroup(
+                        // turn and hoard first ball
+                        new CmdInPlaceTurn(drive, 90),
+                        new ParallelDeadlineGroup(
                                 trajectoryCmd("S2H2_ii"),
-                                new CmdExtendIntakeAndRun(intake, hopper)
-                            ),
+                                new CmdExtendIntakeAndRun(intake, hopper)),
 
-                            //drive behind hub
-                            new CmdInPlaceTurn(drive, -90),
-                            trajectoryCmd("S2H1"),
+                        // drive behind hub
+                        new CmdInPlaceTurn(drive, -90),
+                        trajectoryCmd("S2H1"),
 
-                            //outtake balls behind hub
-                            new CmdExtendIntake(intake),
-                            new CmdReverseIntake(intake, hopper)
+                        // outtake balls behind hub
+                        new CmdExtendIntake(intake),
+                        new CmdReverseIntake(intake, hopper));
 
+        auto_S2H2 =
+                new SequentialCommandGroup(
 
-        );   
+                        // drive and intake ball
+                        new ParallelDeadlineGroup(
+                                trajectoryCmd("S2H2_i"), new CmdExtendIntakeAndRun(intake, hopper)),
 
-        auto_S2H2 = new SequentialCommandGroup(
+                        // turn and shoot
+                        new CmdInPlaceTurn(drive, 180),
+                        shootCmd(),
 
-                            //drive and intake ball
-                            new ParallelDeadlineGroup(
-                                trajectoryCmd("S2H2_i"),
-                                new CmdExtendIntakeAndRun(intake, hopper)
-                            ),
-
-                            //turn and shoot
-                            new CmdInPlaceTurn(drive, 180),
-                            shootCmd(),
-
-                            //turn and hoard first ball
-                            new CmdInPlaceTurn(drive, 90),
-                            new ParallelDeadlineGroup(
+                        // turn and hoard first ball
+                        new CmdInPlaceTurn(drive, 90),
+                        new ParallelDeadlineGroup(
                                 trajectoryCmd("S2H2_ii"),
-                                new CmdExtendIntakeAndRun(intake, hopper)
-                            ),
-
-                            // turn and hoard second ball
-                            new CmdInPlaceTurn(drive, 180),
-                            new ParallelDeadlineGroup(
-                                trajectoryCmd("S2H2_iii"), 
-                                new CmdExtendIntakeAndRun(intake, hopper)),
-                            
-                            //hide ball behinde hub
-                            trajectoryCmd("S2H2_iv"),
-                            new CmdExtendIntake(intake),
-                            new CmdReverseIntake(intake, hopper)
-
-        );
-
-        auto_4Ball180 = new SequentialCommandGroup(
-                            //drive and intake 1 ball
-                            new ParallelDeadlineGroup(
-                                trajectoryCmd("4Ball_Terminal180_i"),  
                                 new CmdExtendIntakeAndRun(intake, hopper)),
 
-                            //turn and shoot 2 balls
-                            new CmdInPlaceTurn(drive, 180),
-                            shootCmd(),
-
-                            //drive to ball and terminal and intake
-                            new ParallelDeadlineGroup(
-                                trajectoryCmd("4Ball_Terminal180_ii"), 
+                        // turn and hoard second ball
+                        new CmdInPlaceTurn(drive, 180),
+                        new ParallelDeadlineGroup(
+                                trajectoryCmd("S2H2_iii"),
                                 new CmdExtendIntakeAndRun(intake, hopper)),
-                            new CmdExtendIntakeAndRun(intake, hopper).withTimeout(1),
 
-                            //drive to tarmac and shoot
-                            trajectoryCmd("Terminal2Tarmac"),
-                            new CmdInPlaceTurn(drive, 180),
-                            alignShootCmd()
+                        // hide ball behinde hub
+                        trajectoryCmd("S2H2_iv"),
+                        new CmdExtendIntake(intake),
+                        new CmdReverseIntake(intake, hopper));
 
-        );
+        auto_4Ball180 =
+                new SequentialCommandGroup(
+                        // drive and intake 1 ball
+                        new ParallelDeadlineGroup(
+                                trajectoryCmd("4Ball_Terminal180_i"),
+                                new CmdExtendIntakeAndRun(intake, hopper)),
 
-        auto_5Ball180 = new SequentialCommandGroup(
-                            
-                            //shoot preloaded
-                            shootCmd(), // shootCmd(2800, 19)
+                        // turn and shoot 2 balls
+                        new CmdInPlaceTurn(drive, 180),
+                        shootCmd(),
 
-                            //turn and intake next 2 balls
-                            new CmdInPlaceTurn(drive, 180),
-                            new ParallelDeadlineGroup(
-                                trajectoryCmd("3_Ball_good"), 
-                                new CmdExtendIntakeAndRun(intake, hopper)
-                            ),
+                        // drive to ball and terminal and intake
+                        new ParallelDeadlineGroup(
+                                trajectoryCmd("4Ball_Terminal180_ii"),
+                                new CmdExtendIntakeAndRun(intake, hopper)),
+                        new CmdExtendIntakeAndRun(intake, hopper).withTimeout(1),
 
-                            //shoot 2 balls
-                            new CmdInPlaceTurn(drive, -50),
-                            shootCmd(),
+                        // drive to tarmac and shoot
+                        trajectoryCmd("Terminal2Tarmac"),
+                        new CmdInPlaceTurn(drive, 180),
+                        alignShootCmd());
 
-                            //turn and go to terminal
-                            new CmdInPlaceTurn(drive, 180),
-                            trajectoryCmd("Tarmac2Terminal"),
+        auto_5Ball180 =
+                new SequentialCommandGroup(
 
-                            //intake 2 balls
-                            new CmdExtendIntakeAndRun(intake, hopper).withTimeout(2),
+                        // shoot preloaded
+                        shootCmd(), // shootCmd(2800, 19)
 
-                            //return to tarmac and shoot
-                            trajectoryCmd("Terminal2Tarmac"),
-                            new CmdInPlaceTurn(drive, 180),
-                            alignShootCmd()
+                        // turn and intake next 2 balls
+                        new CmdInPlaceTurn(drive, 180),
+                        new ParallelDeadlineGroup(
+                                trajectoryCmd("3_Ball_good"),
+                                new CmdExtendIntakeAndRun(intake, hopper)),
 
-        );
+                        // shoot 2 balls
+                        new CmdInPlaceTurn(drive, -50),
+                        shootCmd(),
 
-        auto_Billiards = new SequentialCommandGroup (
-                            // initial position: (6.8, 6.272, 45 deg - should be approx. pointing straight at the ball to knock)
-                            new SequentialCommandGroup(
-                                new CmdExtendIntake(intake),
-                                new CmdReverseIntake(intake, hopper)
-                            ).withTimeout(2),
+                        // turn and go to terminal
+                        new CmdInPlaceTurn(drive, 180),
+                        trajectoryCmd("Tarmac2Terminal"),
 
-                            new CmdInPlaceTurn(drive, 70),
+                        // intake 2 balls
+                        new CmdExtendIntakeAndRun(intake, hopper).withTimeout(2),
 
-                            new ParallelDeadlineGroup(
+                        // return to tarmac and shoot
+                        trajectoryCmd("Terminal2Tarmac"),
+                        new CmdInPlaceTurn(drive, 180),
+                        alignShootCmd());
+
+        auto_Billiards =
+                new SequentialCommandGroup(
+                        // initial position: (6.8, 6.272, 45 deg - should be approx. pointing
+                        // straight at the
+                        // ball to knock)
+                        new SequentialCommandGroup(
+                                        new CmdExtendIntake(intake),
+                                        new CmdReverseIntake(intake, hopper))
+                                .withTimeout(2),
+                        new CmdInPlaceTurn(drive, 70),
+                        new ParallelDeadlineGroup(
                                 trajectoryCmd("Billiards_i"),
-                                new CmdExtendIntakeAndRun(intake, hopper)
-                            ),
-
-                            new CmdInPlaceTurn(drive, 55),
-
-                            shootCmd(1000, 28),
-
-                            new ParallelDeadlineGroup(
+                                new CmdExtendIntakeAndRun(intake, hopper)),
+                        new CmdInPlaceTurn(drive, 55),
+                        shootCmd(1000, 28),
+                        new ParallelDeadlineGroup(
                                 trajectoryCmd("Billiards_ii"),
-                                new CmdExtendIntakeAndRun(intake, hopper)
-                            ),
+                                new CmdExtendIntakeAndRun(intake, hopper)),
+                        new CmdInPlaceTurn(drive, 96),
+                        alignShootCmd());
 
-                            new CmdInPlaceTurn(drive, 96),
-
-                            alignShootCmd()
-        );
-
-        autoMap.put("1 Ball", new AutoInfo(auto_1Ball, Trajectories.driveBack30In.getInitialPose()));
+        autoMap.put(
+                "1 Ball", new AutoInfo(auto_1Ball, Trajectories.driveBack30In.getInitialPose()));
         autoMap.put("2 Ball", new AutoInfo(auto_2Ball, Trajectories.twoBallTraj.getInitialPose()));
-        autoMap.put("3 Ball", new AutoInfo(auto_3Ball180, inverseRotation(trajectories.get("3_Ball_good").getInitialPose())));
-        autoMap.put("4 Ball", new AutoInfo(auto_4Ball180, trajectories.get("4Ball_Terminal180_i").getInitialPose()));
-        autoMap.put("5 Ball", new AutoInfo(auto_5Ball180, inverseRotation(trajectories.get("3_Ball_good").getInitialPose())));
+        autoMap.put(
+                "3 Ball",
+                new AutoInfo(
+                        auto_3Ball180,
+                        inverseRotation(trajectories.get("3_Ball_good").getInitialPose())));
+        autoMap.put(
+                "4 Ball",
+                new AutoInfo(
+                        auto_4Ball180, trajectories.get("4Ball_Terminal180_i").getInitialPose()));
+        autoMap.put(
+                "5 Ball",
+                new AutoInfo(
+                        auto_5Ball180,
+                        inverseRotation(trajectories.get("3_Ball_good").getInitialPose())));
         autoMap.put("S2H1", new AutoInfo(auto_S2H1, trajectories.get("S2H2_i").getInitialPose()));
         autoMap.put("S2H2", new AutoInfo(auto_S2H2, trajectories.get("S2H2_i").getInitialPose()));
-        autoMap.put("Billiards", new AutoInfo(auto_Billiards, new Pose2d(6.8, 6.272, Rotation2d.fromDegrees(45)))); // alternatively, 70 deg. CW from the initial position of Billiards_i
-    
+        autoMap.put(
+                "Billiards",
+                new AutoInfo(
+                        auto_Billiards,
+                        new Pose2d(
+                                6.8,
+                                6.272,
+                                Rotation2d.fromDegrees(
+                                        45)))); // alternatively, 70 deg. CW from the initial
+        // position of Billiards_i
     }
 
     private void initAutoSelector() {
@@ -327,61 +326,59 @@ public class AutoPrograms {
     }
 
     private Command trajectoryCmd(Trajectory traj) {
-        return new RamseteCommand(traj, 
-                            drive::getPose,
-                            new RamseteController(DriveConstants.RAMSETE_B, DriveConstants.RAMSETE_ZETA),
-                            new SimpleMotorFeedforward(DriveConstants.kS,
-                                                        DriveConstants.kV,
-                                                        DriveConstants.kA),
-                            DriveConstants.DRIVE_KINEMATICS,
-                            drive::getWheelSpeeds,
-                            new PIDController(DriveConstants.RAMSETE_KP, 0, 0),
-                            new PIDController(DriveConstants.RAMSETE_KP, 0, 0),
-                            drive::tankDriveVolts,
-                            drive).andThen(() -> drive.stop());
+        return new RamseteCommand(
+                        traj,
+                        drive::getPose,
+                        new RamseteController(
+                                DriveConstants.RAMSETE_B, DriveConstants.RAMSETE_ZETA),
+                        new SimpleMotorFeedforward(
+                                DriveConstants.kS, DriveConstants.kV, DriveConstants.kA),
+                        DriveConstants.DRIVE_KINEMATICS,
+                        drive::getWheelSpeeds,
+                        new PIDController(DriveConstants.RAMSETE_KP, 0, 0),
+                        new PIDController(DriveConstants.RAMSETE_KP, 0, 0),
+                        drive::tankDriveVolts,
+                        drive)
+                .andThen(() -> drive.stop());
     }
 
     private SequentialCommandGroup shootCmd() {
         return new SequentialCommandGroup(
-            new CmdRetractHopper(hopper).withTimeout(0.5),
-            new InstantCommand(() -> shooter.setState(ShooterState.UPPERHUB)),
-            new InstantCommand(() -> shooterLimelight.turnLEDOn()),
-            new ParallelCommandGroup(
-                new CmdHopperShooting(hopper, shooter::isReady),
-                new CmdShootDist(shooter, hood, shooterLimelight)
-            ).withTimeout(2)
-        );
+                new CmdRetractHopper(hopper).withTimeout(0.5),
+                new InstantCommand(() -> shooter.setState(ShooterState.UPPERHUB)),
+                new InstantCommand(() -> shooterLimelight.turnLEDOn()),
+                new ParallelCommandGroup(
+                                new CmdHopperShooting(hopper, shooter::isReady),
+                                new CmdShootDist(shooter, hood, shooterLimelight))
+                        .withTimeout(2));
     }
-    
+
     private SequentialCommandGroup shootCmd(int RPM, double angle) {
         return new SequentialCommandGroup(
-            new CmdRetractHopper(hopper).withTimeout(0.5),
-            new InstantCommand(() -> shooter.setState(ShooterState.UPPERHUB)),
-            new InstantCommand(() -> shooterLimelight.turnLEDOn()),
-            new ParallelCommandGroup(
-                new InstantCommand(() -> hood.startPID(angle)),
-                new CmdHopperShooting(hopper, shooter::isReady),
-                new CmdShootRPM(shooter, RPM)
-            ).withTimeout(2)
-        );
+                new CmdRetractHopper(hopper).withTimeout(0.5),
+                new InstantCommand(() -> shooter.setState(ShooterState.UPPERHUB)),
+                new InstantCommand(() -> shooterLimelight.turnLEDOn()),
+                new ParallelCommandGroup(
+                                new InstantCommand(() -> hood.startPID(angle)),
+                                new CmdHopperShooting(hopper, shooter::isReady),
+                                new CmdShootRPM(shooter, RPM))
+                        .withTimeout(2));
     }
 
     private SequentialCommandGroup alignShootCmd() {
         return new SequentialCommandGroup(
-            new CmdRetractHopper(hopper).withTimeout(0.5),
-            new InstantCommand(() -> shooter.setState(ShooterState.UPPERHUB)),
-            new InstantCommand(shooterLimelight::turnLEDOn),
-            new ParallelCommandGroup(
-                new CmdAlign(drive, shooterLimelight),
-                new CmdHopperShooting(hopper, shooter::isReady),
-                new CmdShootDist(shooter, hood, shooterLimelight)
-            ).withTimeout(5),
-            new InstantCommand(shooterLimelight::turnLEDOff)
-        );
+                new CmdRetractHopper(hopper).withTimeout(0.5),
+                new InstantCommand(() -> shooter.setState(ShooterState.UPPERHUB)),
+                new InstantCommand(shooterLimelight::turnLEDOn),
+                new ParallelCommandGroup(
+                                new CmdAlign(drive, shooterLimelight),
+                                new CmdHopperShooting(hopper, shooter::isReady),
+                                new CmdShootDist(shooter, hood, shooterLimelight))
+                        .withTimeout(5),
+                new InstantCommand(shooterLimelight::turnLEDOff));
     }
 
     private Pose2d inverseRotation(Pose2d pose) {
         return new Pose2d(pose.getTranslation(), pose.getRotation().unaryMinus());
     }
-
 }

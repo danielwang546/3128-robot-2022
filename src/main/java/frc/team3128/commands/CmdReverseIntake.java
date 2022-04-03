@@ -1,15 +1,14 @@
 package frc.team3128.commands;
-import frc.team3128.subsystems.Intake;
-import frc.team3128.subsystems.Hopper;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.team3128.subsystems.Hopper;
+import frc.team3128.subsystems.Intake;
 
-public class CmdReverseIntake extends CommandBase{
-    private Intake m_intake; 
+public class CmdReverseIntake extends CommandBase {
+    private Intake m_intake;
     private Hopper m_hopper;
 
-
-    public CmdReverseIntake(Intake intake, Hopper hopper){
+    public CmdReverseIntake(Intake intake, Hopper hopper) {
         m_intake = intake;
         m_hopper = hopper;
 
@@ -23,13 +22,13 @@ public class CmdReverseIntake extends CommandBase{
     }
 
     @Override
-    public void end(boolean interrupted){
+    public void end(boolean interrupted) {
         m_intake.stopIntake();
         m_hopper.stopHopper();
         m_intake.retractIntake();
     }
 
-    public boolean isFinished(){
+    public boolean isFinished() {
         return false;
     }
 }

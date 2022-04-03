@@ -1,6 +1,4 @@
-
 package frc.team3128.common.hardware.motorcontroller;
-
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
@@ -8,14 +6,12 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 // To be simmed in the next implementation
 
 public class NAR_VictorSPX extends WPI_VictorSPX {
-    
+
     private double prevValue = 0;
     private ControlMode prevControlMode = ControlMode.Disabled;
 
-    /**
-     * @param deviceNumber device id
-     */
-    public NAR_VictorSPX(int deviceNumber){
+    /** @param deviceNumber device id */
+    public NAR_VictorSPX(int deviceNumber) {
         super(deviceNumber);
     }
 
@@ -31,5 +27,3 @@ public class NAR_VictorSPX extends WPI_VictorSPX {
         return prevValue;
     }
 }
-    
-

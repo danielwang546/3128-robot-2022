@@ -14,12 +14,15 @@ public class CmdInPlaceTurn extends PIDCommand {
     public CmdInPlaceTurn(NAR_Drivetrain drivetrain, double turnDeg) {
 
         super(
-            new PIDController(DriveConstants.TURN_kP, DriveConstants.TURN_kI, DriveConstants.TURN_kD),
-            drivetrain::getHeading,
-            MathUtil.inputModulus(drivetrain.getHeading() + turnDeg, -180, 180),
-            output -> drivetrain.tankDrive(output + Math.copySign(DriveConstants.TURN_kF, output), -output - Math.copySign(DriveConstants.TURN_kF, output)),
-            drivetrain
-        );
+                new PIDController(
+                        DriveConstants.TURN_kP, DriveConstants.TURN_kI, DriveConstants.TURN_kD),
+                drivetrain::getHeading,
+                MathUtil.inputModulus(drivetrain.getHeading() + turnDeg, -180, 180),
+                output ->
+                        drivetrain.tankDrive(
+                                output + Math.copySign(DriveConstants.TURN_kF, output),
+                                -output - Math.copySign(DriveConstants.TURN_kF, output)),
+                drivetrain);
 
         this.drivetrain = drivetrain;
         this.turnDeg = turnDeg;
@@ -32,13 +35,13 @@ public class CmdInPlaceTurn extends PIDCommand {
     public void initialize() {
         super.initialize();
 
-        // Hack to make sure the robot turns 180 degrees from current heading and not 180 degrees from 0
+        // Hack to make sure the robot turns 180 degrees from current heading and not 180 degrees
+        // from 0
         double setpoint = MathUtil.inputModulus(drivetrain.getHeading() + turnDeg, -180, 180);
-        m_setpoint = () ->  setpoint;
+        m_setpoint = () -> setpoint;
     }
 
     public boolean isFinished() {
         return getController().atSetpoint();
     }
-
 }

@@ -14,6 +14,7 @@ public enum LimelightKey {
     PIPELINE("getpipe");
 
     private String key;
+
     private LimelightKey(String key) {
         this.key = key;
     }

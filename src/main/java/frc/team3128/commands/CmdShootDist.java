@@ -11,7 +11,7 @@ public class CmdShootDist extends CommandBase {
     private Shooter shooter;
     private Limelight limelight;
     private Hood hood;
-    
+
     public CmdShootDist(Shooter shooter, Hood hood, Limelight limelight) {
         this.shooter = shooter;
         this.limelight = limelight;
@@ -19,21 +19,23 @@ public class CmdShootDist extends CommandBase {
 
         addRequirements(shooter, hood);
     }
-    
+
     @Override
     public void execute() {
-        double dist = limelight.calculateDistToTopTarget(VisionConstants.TARGET_HEIGHT) - 11; // (dist to LL) - (dist from LL to front)
+        double dist =
+                limelight.calculateDistToTopTarget(VisionConstants.TARGET_HEIGHT)
+                        - 11; // (dist to LL) - (dist from LL to front)
         shooter.beginShoot(shooter.calculateMotorVelocityFromDist(dist));
         hood.startPID(hood.calculateAngleFromDistance(dist));
     }
-    
+
     @Override
     public void end(boolean interrupted) {
         shooter.stopShoot();
         Log.info("command shoot", "im cancelling");
         limelight.turnLEDOff();
     }
-    
+
     @Override
     public boolean isFinished() {
         return false;

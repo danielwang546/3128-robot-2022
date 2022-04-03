@@ -1,12 +1,11 @@
 package frc.team3128.commands;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.team3128.Constants.DriveConstants;
 import frc.team3128.subsystems.NAR_Drivetrain;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 public class CmdArcadeDrive extends CommandBase {
 
@@ -18,9 +17,14 @@ public class CmdArcadeDrive extends CommandBase {
 
     private SlewRateLimiter filter = new SlewRateLimiter(DriveConstants.ARCADE_DRIVE_RATE_LIMIT);
 
-    public CmdArcadeDrive(NAR_Drivetrain drivetrain, DoubleSupplier xSpeed, DoubleSupplier turn, DoubleSupplier throttle, BooleanSupplier halfSpeed) {
+    public CmdArcadeDrive(
+            NAR_Drivetrain drivetrain,
+            DoubleSupplier xSpeed,
+            DoubleSupplier turn,
+            DoubleSupplier throttle,
+            BooleanSupplier halfSpeed) {
         m_drivetrain = drivetrain;
-        
+
         m_xSpeed = xSpeed;
         m_turn = turn;
         m_throttle = throttle;
@@ -28,7 +32,7 @@ public class CmdArcadeDrive extends CommandBase {
 
         addRequirements(m_drivetrain);
     }
-    
+
     @Override
     public void execute() {
         double throttle = m_throttle.getAsDouble();
@@ -42,12 +46,12 @@ public class CmdArcadeDrive extends CommandBase {
 
         m_drivetrain.arcadeDrive(filter.calculate(xSpeed * throttle), turn * 0.35);
     }
-    
+
     @Override
     public void end(boolean interrupted) {
         m_drivetrain.stop();
     }
-    
+
     @Override
     public boolean isFinished() {
         return false;

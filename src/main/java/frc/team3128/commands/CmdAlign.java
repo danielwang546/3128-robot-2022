@@ -1,8 +1,5 @@
 package frc.team3128.commands;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -13,12 +10,14 @@ import frc.team3128.common.hardware.limelight.LEDMode;
 import frc.team3128.common.hardware.limelight.Limelight;
 import frc.team3128.common.hardware.limelight.LimelightKey;
 import frc.team3128.subsystems.NAR_Drivetrain;
-
+import java.util.HashSet;
+import java.util.Set;
 
 public class CmdAlign extends CommandBase {
 
     private enum HorizontalOffsetFeedBackDriveState {
-        SEARCHING, FEEDBACK;
+        SEARCHING,
+        FEEDBACK;
     }
 
     private NAR_Drivetrain m_drive;
@@ -28,13 +27,12 @@ public class CmdAlign extends CommandBase {
     private double txThreshold = VisionConstants.TX_THRESHOLD;
     private double goalHorizontalOffset, currHorizontalOffset;
     private double prevError, currError;
-    
     private double prevTime, currTime; // seconds
     private int plateauCount, targetFoundCount;
     private boolean isAligned;
 
-    private HorizontalOffsetFeedBackDriveState aimState = HorizontalOffsetFeedBackDriveState.SEARCHING;
-
+    private HorizontalOffsetFeedBackDriveState aimState =
+            HorizontalOffsetFeedBackDriveState.SEARCHING;
 
     public CmdAlign(NAR_Drivetrain drive, Limelight limelight) {
         m_drive = drive;
@@ -56,48 +54,57 @@ public class CmdAlign extends CommandBase {
     @Override
     public void execute() {
         currTime = RobotController.getFPGATime() / 1e6;
-        switch(aimState) {
+        switch (aimState) {
             case SEARCHING:
-                if(m_limelight.hasValidTarget())
-                    targetFoundCount++;
-                else
-                    targetFoundCount = 0;
-                if(targetFoundCount > 5) {
-                    currHorizontalOffset = m_limelight.getValue(LimelightKey.HORIZONTAL_OFFSET, VisionConstants.SAMPLE_RATE);
+                if (m_limelight.hasValidTarget()) targetFoundCount++;
+                else targetFoundCount = 0;
+                if (targetFoundCount > 5) {
+                    currHorizontalOffset =
+                            m_limelight.getValue(
+                                    LimelightKey.HORIZONTAL_OFFSET, VisionConstants.SAMPLE_RATE);
                     prevError = goalHorizontalOffset - currHorizontalOffset;
                     aimState = HorizontalOffsetFeedBackDriveState.FEEDBACK;
                 }
                 break;
-            
+
             case FEEDBACK:
-                if(!m_limelight.hasValidTarget()) {
+                if (!m_limelight.hasValidTarget()) {
                     aimState = HorizontalOffsetFeedBackDriveState.SEARCHING;
                     isAligned = false;
                     plateauCount = 0;
                     break;
                 }
 
-                currHorizontalOffset = m_limelight.getValue(LimelightKey.HORIZONTAL_OFFSET, VisionConstants.SAMPLE_RATE);
-                currError = goalHorizontalOffset - currHorizontalOffset; // currError is positive if we are too far left
+                currHorizontalOffset =
+                        m_limelight.getValue(
+                                LimelightKey.HORIZONTAL_OFFSET, VisionConstants.SAMPLE_RATE);
+                currError =
+                        goalHorizontalOffset
+                                - currHorizontalOffset; // currError is positive if we are too far
+                // left
                 if (txThreshold < VisionConstants.TX_THRESHOLD_MAX) {
                     txThreshold += (currTime - prevTime) * (VisionConstants.TX_THRESHOLD_INCREMENT);
                 }
 
                 double ff = Math.signum(currError) * VisionConstants.VISION_PID_kF;
-                double feedbackPower = VisionConstants.VISION_PID_kP * currError + VisionConstants.VISION_PID_kD * (currError - prevError) / (currTime - prevTime) + ff;
-                
+                double feedbackPower =
+                        VisionConstants.VISION_PID_kP * currError
+                                + VisionConstants.VISION_PID_kD
+                                        * (currError - prevError)
+                                        / (currTime - prevTime)
+                                + ff;
+
                 feedbackPower = MathUtil.clamp(feedbackPower, -1, 1);
 
                 m_drive.tankDrive(-feedbackPower, feedbackPower);
-                
+
                 if (Math.abs(currError) < txThreshold) {
                     plateauCount++;
                     if (plateauCount > VisionConstants.ALIGN_PLATEAU_COUNT) {
                         isAligned = true;
                         // m_limelight.setLEDMode(LEDMode.OFF);
                     }
-                }
-                else {
+                } else {
                     isAligned = false;
                     plateauCount = 0;
                 }
@@ -105,7 +112,6 @@ public class CmdAlign extends CommandBase {
                 prevError = currError;
 
                 break;
-                
         }
         prevTime = currTime;
         SmartDashboard.putBoolean("Shooter isAligned", isAligned);
@@ -115,7 +121,7 @@ public class CmdAlign extends CommandBase {
     public void end(boolean interrupted) {
         m_drive.stop();
     }
-    
+
     @Override
     public boolean isFinished() {
         return isAligned;

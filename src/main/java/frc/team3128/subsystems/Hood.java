@@ -1,14 +1,12 @@
 package frc.team3128.subsystems;
 
-import frc.team3128.ConstantsInt;
-import frc.team3128.Constants.HoodConstants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.team3128.Constants.HoodConstants;
 import frc.team3128.common.hardware.motorcontroller.NAR_CANSparkMax;
-import frc.team3128.common.hardware.motorcontroller.NAR_TalonFX;
 import frc.team3128.common.infrastructure.NAR_PIDSubsystem;
 import frc.team3128.common.utility.interpolation.InterpolatingDouble;
 import net.thefletcher.revrobotics.SparkMaxRelativeEncoder;
@@ -19,23 +17,25 @@ public class Hood extends NAR_PIDSubsystem {
 
     private static Hood instance;
     private NAR_CANSparkMax m_hoodMotor;
-    //private NAR_TalonFX m_hoodMotor;
+    // private NAR_TalonFX m_hoodMotor;
     private SparkMaxRelativeEncoder m_encoder;
-    
+
     private double tolerance = HoodConstants.TOLERANCE_MIN;
 
     private double time;
     private double prevTime;
 
     public static synchronized Hood getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new Hood();
         }
         return instance;
     }
 
     public Hood() {
-        super(new PIDController(HoodConstants.kP, HoodConstants.kI, HoodConstants.kD), HoodConstants.PLATEAU_COUNT);
+        super(
+                new PIDController(HoodConstants.kP, HoodConstants.kI, HoodConstants.kD),
+                HoodConstants.PLATEAU_COUNT);
 
         configMotors();
         configEncoder();
@@ -62,23 +62,22 @@ public class Hood extends NAR_PIDSubsystem {
         m_hoodMotor.set(0);
     }
 
-    /**
-     * Encoder returns 0 deg when at min angle.
-     */
+    /** Encoder returns 0 deg when at min angle. */
     public void zeroEncoder() {
         m_hoodMotor.setEncoderPosition(0);
     }
 
     public void startPID(double angle) {
         tolerance = HoodConstants.TOLERANCE_MIN;
-        super.setSetpoint(angle);  
+        super.setSetpoint(angle);
         // super.setSetpoint(ConstantsInt.ShooterConstants.SET_ANGLE);
         super.resetPlateauCount();
         getController().setTolerance(tolerance);
     }
 
     /**
-     * Attempts to PID to minimum angle. Will likely be replaced by full homing routine once limit switch is added.
+     * Attempts to PID to minimum angle. Will likely be replaced by full homing routine once limit
+     * switch is added.
      */
     public void zero() {
         startPID(HoodConstants.MIN_ANGLE);
@@ -91,7 +90,10 @@ public class Hood extends NAR_PIDSubsystem {
 
         time = RobotController.getFPGATime() / 1e6;
         if (tolerance < HoodConstants.TOLERANCE_MAX) {
-            tolerance += (time - prevTime) * (HoodConstants.TOLERANCE_MAX - HoodConstants.TOLERANCE_MIN) / HoodConstants.TIME_TO_MAX_TOLERANCE;
+            tolerance +=
+                    (time - prevTime)
+                            * (HoodConstants.TOLERANCE_MAX - HoodConstants.TOLERANCE_MIN)
+                            / HoodConstants.TIME_TO_MAX_TOLERANCE;
             getController().setTolerance(tolerance);
         }
 
@@ -103,7 +105,6 @@ public class Hood extends NAR_PIDSubsystem {
 
         SmartDashboard.putNumber("Hood voltage", voltageOutput);
         SmartDashboard.putNumber("Hood percentage output", voltageOutput / 12.0);
-
     }
 
     @Override
@@ -112,9 +113,12 @@ public class Hood extends NAR_PIDSubsystem {
     }
 
     public double calculateAngleFromDistance(double dist) {
-        // double yay = 7.62717674e-8*dist*dist*dist*dist - 3.20341423e-5*dist*dist*dist + 5.01101227e-3*dist*dist - 2.624432553e-0*dist + 2.20193191e1;
+        // double yay = 7.62717674e-8*dist*dist*dist*dist - 3.20341423e-5*dist*dist*dist +
+        // 5.01101227e-3*dist*dist - 2.624432553e-0*dist + 2.20193191e1;
 
-        return MathUtil.clamp(HoodConstants.hoodAngleMap.getInterpolated(new InterpolatingDouble(dist)).value, 12, 32);
+        return MathUtil.clamp(
+                HoodConstants.hoodAngleMap.getInterpolated(new InterpolatingDouble(dist)).value,
+                12,
+                32);
     }
 }
-

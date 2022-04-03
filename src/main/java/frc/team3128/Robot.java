@@ -4,10 +4,6 @@
 
 package frc.team3128;
 
-import java.util.ArrayList;
-
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -27,13 +23,13 @@ public class Robot extends TimedRobot {
     // public static double voltageRollingAvg = 0;
 
     @Override
-    public void robotInit(){
+    public void robotInit() {
         LiveWindow.disableAllTelemetry();
-        //CameraServer.startAutomaticCapture();
+        // CameraServer.startAutomaticCapture();
     }
 
     @Override
-    public void robotPeriodic(){
+    public void robotPeriodic() {
         m_robotContainer.updateDashboard();
 
         // if(battVoltages.size() == 100) {
@@ -45,7 +41,7 @@ public class Robot extends TimedRobot {
         //     voltageRollingAvg += d;
         // }
         // voltageRollingAvg /= battVoltages.size();
-        
+
     }
 
     @Override
@@ -75,17 +71,13 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void simulationInit() {
-        
-    }
+    public void simulationInit() {}
 
     @Override
     public void simulationPeriodic() {
         CommandScheduler.getInstance().run();
     }
-    
-    @Override
-    public void disabledPeriodic() {
 
-    }
+    @Override
+    public void disabledPeriodic() {}
 }

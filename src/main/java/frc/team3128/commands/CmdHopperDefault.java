@@ -1,9 +1,8 @@
 package frc.team3128.commands;
 
-import java.util.function.BooleanSupplier;
-
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.team3128.subsystems.Hopper;
+import java.util.function.BooleanSupplier;
 
 public class CmdHopperDefault extends CommandBase {
 
@@ -20,7 +19,7 @@ public class CmdHopperDefault extends CommandBase {
     @Override
     public void execute() {
         // if shooting, retract gate if ejected and run the hopper
-        if (isShooting.getAsBoolean()) { 
+        if (isShooting.getAsBoolean()) {
             m_hopper.runHopper();
         } else {
             m_hopper.stopHopper();
@@ -36,5 +35,4 @@ public class CmdHopperDefault extends CommandBase {
     public boolean isFinished() {
         return false;
     }
-
 }

@@ -1,13 +1,13 @@
 package frc.team3128.subsystems;
-import com.ctre.phoenix.motorcontrol.ControlMode;
 
+import static edu.wpi.first.wpilibj.DoubleSolenoid.Value.*;
+
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.team3128.Constants.IntakeConstants;
 import frc.team3128.common.hardware.motorcontroller.NAR_TalonSRX;
-import static edu.wpi.first.wpilibj.DoubleSolenoid.Value.*;
-
 
 public class Intake extends SubsystemBase {
 
@@ -15,7 +15,6 @@ public class Intake extends SubsystemBase {
 
     private DoubleSolenoid m_intakeSolenoid;
     private NAR_TalonSRX m_intake;
-
 
     public static synchronized Intake getInstance() {
         if (instance == null) {
@@ -29,41 +28,44 @@ public class Intake extends SubsystemBase {
         configPneumatics();
     }
 
-    private void configMotors () {
+    private void configMotors() {
         m_intake = new NAR_TalonSRX(IntakeConstants.INTAKE_MOTOR_ID);
     }
+
     private void configPneumatics() {
-        m_intakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, IntakeConstants.INTAKE_SOLENOID_FORWARD_CHANNEL_ID, IntakeConstants.INTAKE_SOLENOID_BACKWARD_CHANNEL_ID);
+        m_intakeSolenoid =
+                new DoubleSolenoid(
+                        PneumaticsModuleType.CTREPCM,
+                        IntakeConstants.INTAKE_SOLENOID_FORWARD_CHANNEL_ID,
+                        IntakeConstants.INTAKE_SOLENOID_BACKWARD_CHANNEL_ID);
         retractIntake();
     }
 
-    public void runIntake(){
+    public void runIntake() {
         m_intake.set(ControlMode.PercentOutput, IntakeConstants.INTAKE_MOTOR_POWER);
     }
 
-    public void runIntakeBack(){
+    public void runIntakeBack() {
         m_intake.set(ControlMode.PercentOutput, IntakeConstants.OUTTAKE_MOTOR_POWER);
     }
 
-    public void stopIntake(){
+    public void stopIntake() {
         m_intake.set(ControlMode.PercentOutput, 0);
     }
 
-    public void retractIntake(){
+    public void retractIntake() {
         m_intakeSolenoid.set(kReverse);
     }
 
-    public void ejectIntake(){
+    public void ejectIntake() {
         m_intakeSolenoid.set(kForward);
-
     }
+
     public void off() {
-        m_intakeSolenoid.set(kOff); 
+        m_intakeSolenoid.set(kOff);
     }
 
     public String getSolenoid() {
         return m_intakeSolenoid.get().toString();
     }
-
 }
-

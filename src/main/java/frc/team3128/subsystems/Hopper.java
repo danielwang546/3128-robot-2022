@@ -1,21 +1,18 @@
-package frc.team3128.subsystems; 
+package frc.team3128.subsystems;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.team3128.Constants.HopperConstants;
 import frc.team3128.common.hardware.motorcontroller.NAR_TalonSRX;
-import frc.team3128.common.infrastructure.NAR_EMotor;
 
 public class Hopper extends SubsystemBase {
 
     private static Hopper instance;
 
     private NAR_TalonSRX m_hopper1, m_hopper2;
-    //private DoubleSolenoid m_hopperSolenoid;
+    // private DoubleSolenoid m_hopperSolenoid;
     private Encoder m_encoder;
 
     public Hopper() {
@@ -25,8 +22,7 @@ public class Hopper extends SubsystemBase {
     }
 
     public static synchronized Hopper getInstance() {
-        if (instance == null) 
-            instance = new Hopper();
+        if (instance == null) instance = new Hopper();
         return instance;
     }
 
@@ -46,36 +42,29 @@ public class Hopper extends SubsystemBase {
         SmartDashboard.putNumber("Hopper Enc", m_encoder.getDistance());
     }
 
-    /**
-     * @return true if hopper has reversed to desired distance, false if retracted
-     */
+    /** @return true if hopper has reversed to desired distance, false if retracted */
     public boolean isReversed() {
         return m_encoder.getDistance() <= HopperConstants.HOPPER_MAX_REVERSE_DISTANCE;
     }
 
-    /**
-     * Runs the hopper using the HOPPER_MOTOR_POWER constant
-     */
+    /** Runs the hopper using the HOPPER_MOTOR_POWER constant */
     public void runHopper() {
         m_hopper1.set(HopperConstants.HOPPER_MOTOR_POWER);
         m_hopper2.set(HopperConstants.HOPPER_MOTOR_POWER);
-
     }
 
     public void reverseHopper() {
         m_encoder.reset();
-        m_hopper1.set(HopperConstants.REVERSE_HOPPER_MOTOR_POWER); //change later
+        m_hopper1.set(HopperConstants.REVERSE_HOPPER_MOTOR_POWER); // change later
     }
 
-    /**
-     * Stops the hopper - sets power to 0
-     */
+    /** Stops the hopper - sets power to 0 */
     public void stopHopper() {
         m_hopper1.set(0);
         m_hopper2.set(0);
     }
 
-    public void resetMotorEncoder(){
+    public void resetMotorEncoder() {
         m_hopper1.setSelectedSensorPosition(0);
     }
 

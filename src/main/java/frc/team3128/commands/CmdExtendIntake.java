@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.team3128.subsystems.Intake;
 
 public class CmdExtendIntake extends WaitCommand {
-    
+
     private Intake m_intake;
 
     public CmdExtendIntake(Intake intake) {
@@ -22,10 +22,9 @@ public class CmdExtendIntake extends WaitCommand {
         m_intake.ejectIntake();
     }
 
-    @Override 
+    @Override
     public void end(boolean interrupted) {
         super.end(interrupted);
         m_intake.stopIntake();
     }
-
 }

@@ -5,7 +5,7 @@ import frc.team3128.Constants.ClimberConstants;
 import frc.team3128.common.utility.Log;
 import frc.team3128.subsystems.Climber;
 
-public class CmdClimbEncoder extends CommandBase{
+public class CmdClimbEncoder extends CommandBase {
     private final Climber m_climber;
     private final double m_distance;
     private boolean isGoingDown;
@@ -20,14 +20,14 @@ public class CmdClimbEncoder extends CommandBase{
 
     @Override
     public void initialize() {
-        //leftTicks = m_climber.getCurrentTicksLeft() + m_climber.getDesiredTicks(m_distance);
-        //if distance is greater than current encoder value, going up
+        // leftTicks = m_climber.getCurrentTicksLeft() + m_climber.getDesiredTicks(m_distance);
+        // if distance is greater than current encoder value, going up
         if (m_distance > m_climber.getCurrentTicksLeft()) {
             m_climber.bothExtend();
             isGoingDown = false;
             Log.info("CmdClimbEncoder", "going up");
         }
-        //if distance is less than current encoder value, go down
+        // if distance is less than current encoder value, go down
         else {
             m_climber.bothRetract();
             isGoingDown = true;
@@ -36,8 +36,7 @@ public class CmdClimbEncoder extends CommandBase{
     }
 
     @Override
-    public void execute() {
-    }
+    public void execute() {}
 
     @Override
     public void end(boolean interrupted) {
@@ -47,11 +46,14 @@ public class CmdClimbEncoder extends CommandBase{
 
     @Override
     public boolean isFinished() {
-        //return (Math.abs(leftTicks - m_climber.getCurrentTicksLeft())) <= Constants.ClimberConstants.CLIMBER_ERROR_RATE;
+        // return (Math.abs(leftTicks - m_climber.getCurrentTicksLeft())) <=
+        // Constants.ClimberConstants.CLIMBER_ERROR_RATE;
         if (isGoingDown) {
-            return (m_climber.getCurrentTicksLeft() <= m_distance + ClimberConstants.TOLERANCE_TICKS);
+            return (m_climber.getCurrentTicksLeft()
+                    <= m_distance + ClimberConstants.TOLERANCE_TICKS);
         } else {
-            return (m_climber.getCurrentTicksLeft() >= m_distance - ClimberConstants.TOLERANCE_TICKS);
+            return (m_climber.getCurrentTicksLeft()
+                    >= m_distance - ClimberConstants.TOLERANCE_TICKS);
         }
     }
 }

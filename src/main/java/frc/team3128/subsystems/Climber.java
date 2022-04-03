@@ -4,7 +4,6 @@ import static edu.wpi.first.wpilibj.DoubleSolenoid.Value.kForward;
 import static edu.wpi.first.wpilibj.DoubleSolenoid.Value.kReverse;
 
 import com.ctre.phoenix.motorcontrol.InvertType;
-
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,7 +14,7 @@ import frc.team3128.common.hardware.motorcontroller.NAR_TalonFX;
 import frc.team3128.common.infrastructure.NAR_EMotor;
 
 public class Climber extends SubsystemBase {
-    
+
     public enum ClimberState {
         EXTENDED,
         RETRACTED;
@@ -49,18 +48,19 @@ public class Climber extends SubsystemBase {
         m_rightMotor = new NAR_TalonFX(ClimberConstants.CLIMBER_MOTOR_RIGHT_ID);
 
         m_leftMotor.setInverted(true);
-        m_rightMotor.follow((NAR_EMotor)m_leftMotor);
+        m_rightMotor.follow((NAR_EMotor) m_leftMotor);
         m_rightMotor.setInverted(InvertType.OpposeMaster);
-        
+
         m_leftMotor.setNeutralMode(ClimberConstants.CLIMBER_NEUTRAL_MODE);
         m_rightMotor.setNeutralMode(ClimberConstants.CLIMBER_NEUTRAL_MODE);
-
     }
-    
+
     private void configPneumatics() {
-        m_climberSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 
-                                                ClimberConstants.CLIMBER_SOLENOID_FORWARD_CHANNEL_ID, 
-                                                ClimberConstants.CLIMBER_SOLENOID_BACKWARD_CHANNEL_ID);
+        m_climberSolenoid =
+                new DoubleSolenoid(
+                        PneumaticsModuleType.CTREPCM,
+                        ClimberConstants.CLIMBER_SOLENOID_FORWARD_CHANNEL_ID,
+                        ClimberConstants.CLIMBER_SOLENOID_BACKWARD_CHANNEL_ID);
 
         retractPiston();
     }
@@ -99,24 +99,28 @@ public class Climber extends SubsystemBase {
         m_leftMotor.set(0);
     }
 
-    public void extendPiston(){
+    public void extendPiston() {
         m_climberSolenoid.set(kForward);
     }
 
-    public void retractPiston(){
+    public void retractPiston() {
         m_climberSolenoid.set(kReverse);
     }
 
     public void setState(ClimberState state) {
         climberState = state;
     }
-    
+
     /**
      * @param distance Distance to extend/retract in inches
      * @return Corresponding encoder counts
      */
     public double getDesiredTicks(double distance) {
-        double desiredTicks = distance * (ConversionConstants.FALCON_ENCODER_RESOLUTION * ClimberConstants.CLIMBER_GEAR_RATIO) / (ClimberConstants.AXLE_DIAMETER * Math.PI);
+        double desiredTicks =
+                distance
+                        * (ConversionConstants.FALCON_ENCODER_RESOLUTION
+                                * ClimberConstants.CLIMBER_GEAR_RATIO)
+                        / (ClimberConstants.AXLE_DIAMETER * Math.PI);
         return desiredTicks;
     }
 

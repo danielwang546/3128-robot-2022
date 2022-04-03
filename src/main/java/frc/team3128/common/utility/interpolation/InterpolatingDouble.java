@@ -3,12 +3,14 @@ package frc.team3128.common.utility.interpolation;
 /**
  * A Double that can be interpolated using the InterpolatingTreeMap.
  *
- * yoinked from 254
- * 
+ * <p>yoinked from 254
+ *
  * @see InterpolatingTreeMap
  */
-public class InterpolatingDouble implements Interpolable<InterpolatingDouble>, InverseInterpolable<InterpolatingDouble>,
-        Comparable<InterpolatingDouble> {
+public class InterpolatingDouble
+        implements Interpolable<InterpolatingDouble>,
+                InverseInterpolable<InterpolatingDouble>,
+                Comparable<InterpolatingDouble> {
     public Double value = 0.0;
 
     public InterpolatingDouble(Double val) {
@@ -45,5 +47,4 @@ public class InterpolatingDouble implements Interpolable<InterpolatingDouble>, I
             return 0;
         }
     }
-
 }

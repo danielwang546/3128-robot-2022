@@ -1,14 +1,14 @@
 package frc.team3128.commands;
-import frc.team3128.subsystems.Hopper;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.team3128.subsystems.Hopper;
 
 public class CmdRetractHopper extends CommandBase {
     private Hopper m_hopper;
 
     public CmdRetractHopper(Hopper hopper) {
         m_hopper = hopper;
-        addRequirements(m_hopper); 
+        addRequirements(m_hopper);
     }
 
     @Override
@@ -18,8 +18,7 @@ public class CmdRetractHopper extends CommandBase {
     }
 
     @Override
-    public void execute() {
-    }
+    public void execute() {}
 
     @Override
     public void end(boolean interrupted) {
