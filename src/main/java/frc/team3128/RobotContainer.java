@@ -46,14 +46,6 @@ public class RobotContainer {
 
     private Limelight m_shooterLimelight;
     private Limelight m_ballLimelight;
-    
-    private SequentialCommandGroup extendIntakeAndReverse;
-    private Command shootCommand;
-
-    private SequentialCommandGroup manualShoot;
-    private SequentialCommandGroup lowerHubShoot;
-    private CmdClimb climbCommand;
-    private CmdClimbTraversalOG climbTraversalCommand;
 
     private AutoPrograms autos;
 
@@ -86,7 +78,8 @@ public class RobotContainer {
         m_commandScheduler.setDefaultCommand(m_drive, new CmdArcadeDrive(m_drive, m_rightStick::getY, m_rightStick::getTwist, m_rightStick::getThrottle, () -> driveHalfSpeed));
         //m_commandScheduler.setDefaultCommand(m_hopper, new CmdHopperDefault(m_hopper, m_shooter::isReady)); //TODO: make input into this good method ???
 
-        initAutos();
+        autos = new AutoPrograms(m_drive, m_shooter, m_intake, m_hopper, m_hood, m_shooterLimelight);
+
         initDashboard();
         initLimelights(m_shooterLimelight, m_ballLimelight); 
         configureButtonBindings();
@@ -135,7 +128,18 @@ public class RobotContainer {
         // 16: climber go down slowly while held
 
         //RIGHT
-        m_rightStick.getButton(1).whenPressed(shootCommand)
+        m_rightStick.getButton(1).whenPressed(new SequentialCommandGroup(
+                                                new InstantCommand(m_shooterLimelight::turnLEDOn),
+                                                new CmdRetractHopper(m_hopper), 
+                                                new InstantCommand(() -> m_shooter.setState(ShooterState.UPPERHUB)),
+                                                // new CmdExtendIntake(m_intake),
+                                                new ParallelCommandGroup(
+                                                    // new RunCommand(m_intake::runIntake, m_intake),
+                                                    new CmdAlign(m_drive, m_shooterLimelight), 
+                                                    new CmdHopperShooting(m_hopper, m_shooter::isReady),
+                                                    new CmdShootDist(m_shooter, m_hood, m_shooterLimelight)
+                                                )
+                                            ))
                                 .whenReleased(new ParallelCommandGroup(new InstantCommand(m_shooter::stopShoot, m_shooter), new InstantCommand(m_shooterLimelight::turnLEDOff)));
         // m_rightStick.getButton(1).whenPressed(new SequentialCommandGroup(new CmdRetractHopper(m_hopper), new ParallelCommandGroup(new InstantCommand(() -> m_hood.startPID(12)), new CmdShootRPM(m_shooter, 2700), new CmdHopperShooting(m_hopper, m_shooter::isReady))))
         //                             .whenReleased(new ParallelCommandGroup(new InstantCommand(m_shooter::stopShoot, m_shooter)));
@@ -147,7 +151,17 @@ public class RobotContainer {
         //                                     new CmdExtendIntakeAndRun(m_intake, m_hopper)).beforeStarting(new WaitCommand(0.5)) // Wait 0.5s, then extend intake so as to not block vision
         //                                 );
 
-        m_rightStick.getButton(3).whenHeld(lowerHubShoot);
+        m_rightStick.getButton(3).whenHeld(new SequentialCommandGroup(
+                                            new CmdRetractHopper(m_hopper),
+                                            new InstantCommand(() -> m_shooter.setState(ShooterState.LOWERHUB)),
+                                            // new CmdExtendIntake(m_intake),
+                                            new ParallelCommandGroup(
+                                                // new RunCommand(m_intake::runIntake, m_intake),
+                                                new RunCommand(m_drive::stop, m_drive),
+                                                new CmdHopperShooting(m_hopper, m_shooter::isReady),
+                                                new InstantCommand(() -> m_hood.startPID(28)),
+                                                new CmdShootRPM(m_shooter, 1200))
+                                ));
 
         m_rightStick.getButton(4).whenPressed(new SequentialCommandGroup(new CmdRetractHopper(m_hopper), new ParallelCommandGroup(new InstantCommand(() -> m_hood.startPID(10)), new CmdShootRPM(m_shooter, 2530), new CmdHopperShooting(m_hopper, m_shooter::isReady))))
                                     .whenReleased(new ParallelCommandGroup(new InstantCommand(m_shooter::stopShoot, m_shooter)));
@@ -155,13 +169,13 @@ public class RobotContainer {
         //m_rightStick.getButton(4).whenHeld(lowerHubShoot);
 
         //m_rightStick.getButton(5).whenPressed(climbCommand);
-        m_rightStick.getButton(5).whenPressed(climbTraversalCommand);
+        m_rightStick.getButton(5).whenPressed(new CmdClimbTraversalOG(m_climber));
 
         m_rightStick.getButton(6).whenPressed(new CmdClimbEncoder(m_climber, ClimberConstants.CLIMB_ENC_TO_TOP));
 
         m_rightStick.getButton(7).whenPressed(new CmdClimbEncoder(m_climber, 0));
 
-        m_rightStick.getButton(8).whenHeld(extendIntakeAndReverse);
+        m_rightStick.getButton(8).whenHeld(new SequentialCommandGroup(new CmdExtendIntake(m_intake).withTimeout(0.1), new CmdReverseIntake(m_intake, m_hopper)));
 
         m_rightStick.getButton(10).whenPressed(new InstantCommand(m_climber::bothStop, m_climber));
 
@@ -262,54 +276,6 @@ public class RobotContainer {
         initPneumatics();
         m_hood.zero();
         // m_shooterLimelight.turnLEDOff();
-    }
-
-    private void initAutos() {
-
-        autos = new AutoPrograms(m_drive, m_shooter, m_intake, m_hopper, m_hood, m_shooterLimelight);
-
-        climbCommand = new CmdClimb(m_climber);
-        climbTraversalCommand = new CmdClimbTraversalOG(m_climber);
-        
-        extendIntakeAndReverse = new SequentialCommandGroup(new CmdExtendIntake(m_intake).withTimeout(0.1), new CmdReverseIntake(m_intake, m_hopper));
-
-
-        //this shoot command is the ideal one with all capabilities
-        shootCommand = new SequentialCommandGroup(
-                        new InstantCommand(m_shooterLimelight::turnLEDOn),
-                        new CmdRetractHopper(m_hopper), 
-                        new InstantCommand(() -> m_shooter.setState(ShooterState.UPPERHUB)),
-                        // new CmdExtendIntake(m_intake),
-                        new ParallelCommandGroup(
-                            // new RunCommand(m_intake::runIntake, m_intake),
-                            new CmdAlign(m_drive, m_shooterLimelight), 
-                            new CmdHopperShooting(m_hopper, m_shooter::isReady),
-                            new CmdShootDist(m_shooter, m_hood, m_shooterLimelight)
-                        )
-        );
-
-        //use this shoot command for testing
-        manualShoot = new SequentialCommandGroup(
-                        new InstantCommand(m_shooterLimelight::turnLEDOn), 
-                        new CmdRetractHopper(m_hopper),
-                        new InstantCommand(() -> m_shooter.setState(ShooterState.UPPERHUB)),
-                        new ParallelCommandGroup(
-                            new CmdHopperShooting(m_hopper, m_shooter::isReady),
-                            new CmdShootDist(m_shooter, m_hood, m_shooterLimelight)
-                        )
-        );
-
-        lowerHubShoot = new SequentialCommandGroup(
-                            new CmdRetractHopper(m_hopper),
-                            new InstantCommand(() -> m_shooter.setState(ShooterState.LOWERHUB)),
-                            // new CmdExtendIntake(m_intake),
-                            new ParallelCommandGroup(
-                                // new RunCommand(m_intake::runIntake, m_intake),
-                                new RunCommand(m_drive::stop, m_drive),
-                                new CmdHopperShooting(m_hopper, m_shooter::isReady),
-                                new InstantCommand(() -> m_hood.startPID(28)),
-                                new CmdShootRPM(m_shooter, 1200))
-        );
     }
 
     private void initDashboard() {
