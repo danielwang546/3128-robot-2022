@@ -5,6 +5,17 @@
  * get rid of them when we clean up our codebase.
  */
 
+/**
+ * Daniel's ideas for cleaner autos:
+ *  - Define them in a separate class, passing in each necessary subsystem / Limelight
+ *    as a constructor parameter. 
+ *  - Create a hashmap of strings to trajectories and get trajectories by 
+ *    name instead of numerical index.
+ *  - Define an enum with the name, command, and initial position for each auto.
+ * 
+ *  This would probably cut 300-400 lines from RobotContainer, which would be very nice.
+ *  Also we should have LEDs because they're pretty funny.
+ */
 
 // package frc.team3128.autonomous;
 
