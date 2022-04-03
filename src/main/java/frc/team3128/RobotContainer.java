@@ -313,6 +313,8 @@ public class RobotContainer {
         initPneumatics();
         m_hood.zero();
         // m_shooterLimelight.turnLEDOff();
+
+        m_commandScheduler.schedule(new CmdVisionPoseEstimation(m_drive, m_shooterLimelight));
     }
 
     private void initAutos() {

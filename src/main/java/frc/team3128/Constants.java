@@ -9,9 +9,14 @@ import frc.team3128.common.utility.interpolation.InterpolatingTreeMap;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N5;
 
 // CURRENTLY CONFIGURED FOR 4 FALCON DRIVE (Compbot)
 
@@ -78,6 +83,11 @@ public class Constants {
             kVAngular,          // kvVoltSecondsPerRadian
             kAAngular           // kaVoltSecondsSquaredPerRadian
         );
+
+        // I stole these numbers from WPI's Differential Drive Pose Estimator example
+        public static final Matrix<N5, N1> DT_STATE_STD = VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5), 0.01, 0.01);
+        public static final Matrix<N3, N1> DT_LOCAL_MEASUREMENT_STD = VecBuilder.fill(0.02, 0.02, Units.degreesToRadians(1));
+        public static final Matrix<N3, N1> DT_VISION_MEASUREMENT_STD = VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)); // Look into scaling this with distance
     }
 
     public static class ShooterConstants {
@@ -287,5 +297,14 @@ public class Constants {
 
         public static final double BALL_VEL_THRESHOLD = 2.54; // m/s - 100 in/s 
         public static final int BALL_VEL_PLATEAU_THRESHOLD = 10;
+
+        public static final double LIMELIGHT_LATENCY = 0.03; // seconds
+    }
+
+    public static class FieldConstants {
+        public static final Translation2d HUB_POSITION = new Translation2d(Units.inchesToMeters(324), Units.inchesToMeters(162));
+        public static final double FIELD_X_LENGTH = Units.inchesToMeters(648); // meters
+        public static final double FIELD_Y_LENGTH = Units.inchesToMeters(324); // meters
+        public static final double HUB_RADIUS = Units.inchesToMeters(26.69); // meters
     }
 }
