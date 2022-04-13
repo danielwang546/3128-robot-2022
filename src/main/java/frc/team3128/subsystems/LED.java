@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.team3128.Constants.LEDConstants.*;
 
+import java.util.Arrays;
+
 /**
  * @author Daniel Wang, Kanvar Soin
  */
@@ -30,8 +32,8 @@ public class LED extends SubsystemBase {
 
     private static LED instance;
 
-    private LEDState topHalfState = LEDState.CHASE;
-    private LEDState bottomHalfState = LEDState.CHASE;
+    private LEDState topHalfState = LEDState.COLORWIPE_GREEN;
+    private LEDState bottomHalfState = LEDState.RED_ALLIANCE;
 
     private AddressableLED ledStrip;
     private AddressableLEDBuffer ledBuffer;
@@ -127,16 +129,20 @@ public class LED extends SubsystemBase {
     
     private void chase(int[] idxs, Color c1, Color c2) {
         zeroPos += CHASE_SPEED;
+        
+        int effectiveLen = idxs.length / 2; // We need to copy this on both sides, so we can't just use LENGTH
+        int[] effectiveIdxs = Arrays.copyOfRange(idxs, 0, effectiveLen);
 
-        for (int i : idxs) {
-            double pctDownStrip = (double)i / LENGTH;
-            double numCycles = (double)LENGTH / STRIPE_WIDTH / 2;
+        for (int i : effectiveIdxs) {
+            double pctDownStrip = (double)i / effectiveLen;
+            double numCycles = (double)effectiveLen / STRIPE_WIDTH / 2;
 
             double colorBump = 0.5 * Math.sin(2 * Math.PI * numCycles * (pctDownStrip-zeroPos)) + 0.5;
 
             colorBump *= colorBump;
 
             ledBuffer.setLED(i, cInterp(c1, c2, colorBump));
+            ledBuffer.setLED(LENGTH - i - 1, cInterp(c1, c2, colorBump));
         }
     }
 
@@ -145,17 +151,23 @@ public class LED extends SubsystemBase {
     }
 
     private void colorWipe(int[] idxs, Color c1, Color c2) {
-        for (int i : idxs) {
-            if (i >= wipeCurrPos && i < wipeCurrPos + LENGTH) {
+        
+        int effectiveLen = idxs.length / 2; // We need to copy this on both sides, so we can't just use LENGTH
+        int[] effectiveIdxs = Arrays.copyOfRange(idxs, 0, effectiveLen);
+
+        for (int i : effectiveIdxs) {
+            if (i >= wipeCurrPos && i < wipeCurrPos + effectiveLen) {
                 ledBuffer.setLED(i, c1);
+                ledBuffer.setLED(LENGTH - i - 1, c1);
             } else {
                 ledBuffer.setLED(i, c2);
+                ledBuffer.setLED(LENGTH - i - 1, c2);
             }
         }
 
         wipeCurrPos += 1;
-        if (wipeCurrPos == LENGTH) {
-            wipeCurrPos = -LENGTH;
+        if (wipeCurrPos == idxs[0] + effectiveLen) {
+            wipeCurrPos = idxs[0]-effectiveLen;
         }
     }
 
