@@ -29,23 +29,12 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit(){
         LiveWindow.disableAllTelemetry();
-        //CameraServer.startAutomaticCapture();
     }
 
     @Override
     public void robotPeriodic(){
+        CommandScheduler.getInstance().run();
         m_robotContainer.updateDashboard();
-
-        // if(battVoltages.size() == 100) {
-        //     battVoltages.remove(0);
-        // }
-        // battVoltages.add(RobotController.getBatteryVoltage());
-
-        // for (double d : battVoltages) {
-        //     voltageRollingAvg += d;
-        // }
-        // voltageRollingAvg /= battVoltages.size();
-        
     }
 
     @Override
@@ -59,7 +48,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
-        CommandScheduler.getInstance().run();
+
     }
 
     @Override
@@ -71,7 +60,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-        CommandScheduler.getInstance().run();
+
     }
 
     @Override
@@ -81,7 +70,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationPeriodic() {
-        CommandScheduler.getInstance().run();
+
     }
     
     @Override

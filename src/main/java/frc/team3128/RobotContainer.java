@@ -53,8 +53,10 @@ import frc.team3128.subsystems.Climber;
 import frc.team3128.subsystems.Hood;
 import frc.team3128.subsystems.Hopper;
 import frc.team3128.subsystems.Intake;
+import frc.team3128.subsystems.LED;
 import frc.team3128.subsystems.NAR_Drivetrain;
 import frc.team3128.subsystems.Shooter;
+import frc.team3128.subsystems.LED.LEDState;
 import frc.team3128.subsystems.Shooter.ShooterState;
 
 /**
@@ -71,6 +73,7 @@ public class RobotContainer {
     private Hopper m_hopper;
     private Climber m_climber;
     private Hood m_hood;
+    private LED m_led;
 
     private NAR_Joystick m_leftStick;
     private NAR_Joystick m_rightStick;
@@ -131,6 +134,7 @@ public class RobotContainer {
         m_hopper = Hopper.getInstance();
         m_climber = Climber.getInstance();
         m_hood = Hood.getInstance();
+        m_led = LED.getInstance();
 
         //Enable all PIDSubsystems so that useOutput runs
         m_shooter.enable();

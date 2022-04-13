@@ -4,6 +4,7 @@ import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.team3128.common.utility.interpolation.InterpolatingDouble;
 import frc.team3128.common.utility.interpolation.InterpolatingTreeMap;
 
@@ -314,5 +315,19 @@ public class Constants {
 
         public static final double BALL_VEL_THRESHOLD = 2.54; // m/s - 100 in/s 
         public static final int BALL_VEL_PLATEAU_THRESHOLD = 10;
+    }
+
+    public static class LEDConstants {
+        public static final int LED_PORT = 9;
+        public static final int LENGTH = 120;
+
+        public static final Color EYE_COLOR = Color.kFirstRed;
+        public static final Color BACKGROUND_COLOR = Color.kBlack;
+
+        public static final double CHASE_SPEED = 0.012;
+        public static final int STRIPE_WIDTH = 10;
+
+        public static final Color[] HORSE_RACE_COLORS = {Color.kRed, Color.kBlue, Color.kDarkOrange, Color.kGreen, Color.kYellow, Color.kPurple, Color.kPink};
+        public static final int HORSE_RACE_SPACING = 25;
     }
 }
