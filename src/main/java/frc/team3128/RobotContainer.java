@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.team3128.Constants.HoodConstants;
 import frc.team3128.ConstantsInt.ClimberConstants;
 import frc.team3128.ConstantsInt.VisionConstants;
@@ -106,6 +107,7 @@ public class RobotContainer {
     
     private SequentialCommandGroup extendIntakeAndReverse;
     private Command shootCommand;
+    private Command alignCommand;
 
     private SequentialCommandGroup manualShoot;
     private SequentialCommandGroup lowerHubShoot;
@@ -329,6 +331,13 @@ public class RobotContainer {
 
         m_rightStick.getPOVButton(0).whenPressed(() -> m_shooterLimelight.turnLEDOn());
         m_rightStick.getPOVButton(4).whenPressed(() -> m_shooterLimelight.turnLEDOff());
+
+        // Other triggers
+        new Trigger(m_shooter::isReady).whenActive(() -> m_led.setTopState(LEDState.GREEN))
+                                        .whenInactive(() -> m_led.setTopState(LEDState.ORANGE));
+        
+        new Trigger(shootCommand::isScheduled).whenInactive(() -> m_led.defaultState());
+                                        
     }
 
     public void init() {
@@ -363,7 +372,7 @@ public class RobotContainer {
                         // new CmdExtendIntake(m_intake),
                         new ParallelCommandGroup(
                             // new RunCommand(m_intake::runIntake, m_intake),
-                            new CmdAlign(m_drive, m_shooterLimelight), 
+                            new CmdAlign(m_drive, m_shooterLimelight, m_led), 
                             new CmdHopperShooting(m_hopper, m_shooter::isReady),
                             new CmdShootDist(m_shooter, m_hood, m_shooterLimelight)
                         )
@@ -663,7 +672,7 @@ public class RobotContainer {
             new InstantCommand(() -> m_shooter.setState(ShooterState.UPPERHUB)),
             new InstantCommand(m_shooterLimelight::turnLEDOn),
             new ParallelCommandGroup(
-                new CmdAlign(m_drive, m_shooterLimelight),
+                new CmdAlign(m_drive, m_shooterLimelight, m_led),
                 new CmdHopperShooting(m_hopper, m_shooter::isReady),
                 new CmdShootDist(m_shooter, m_hood, m_shooterLimelight)
             ).withTimeout(2),
@@ -675,7 +684,7 @@ public class RobotContainer {
         return new SequentialCommandGroup(
             new InstantCommand(() -> m_shooterLimelight.turnLEDOn()),
             new CmdInPlaceTurn(m_drive, 170).until(m_shooterLimelight::hasValidTarget),
-            new CmdAlign(m_drive, m_shooterLimelight)
+            new CmdAlign(m_drive, m_shooterLimelight, m_led)
         );
     }
 
@@ -683,7 +692,7 @@ public class RobotContainer {
         return new SequentialCommandGroup(
             new InstantCommand(() -> m_shooterLimelight.turnLEDOn()),
             new CmdInPlaceTurn(m_drive, -170).until(m_shooterLimelight::hasValidTarget),
-            new CmdAlign(m_drive, m_shooterLimelight)
+            new CmdAlign(m_drive, m_shooterLimelight, m_led)
         );
     }
 

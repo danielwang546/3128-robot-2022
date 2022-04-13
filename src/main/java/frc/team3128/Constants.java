@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.util.Color;
 import frc.team3128.common.utility.interpolation.InterpolatingDouble;
 import frc.team3128.common.utility.interpolation.InterpolatingTreeMap;
 
+import java.util.stream.IntStream;
+
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
@@ -329,5 +331,9 @@ public class Constants {
 
         public static final Color[] HORSE_RACE_COLORS = {Color.kRed, Color.kBlue, Color.kDarkOrange, Color.kGreen, Color.kYellow, Color.kPurple, Color.kPink};
         public static final int HORSE_RACE_SPACING = 25;
+
+        public static final int[] BOTTOM_IDXS = IntStream.concat(IntStream.range(0, LENGTH / 4), IntStream.range(3 * LENGTH / 4, LENGTH)).toArray();
+        public static final int[] TOP_IDXS = IntStream.range(LENGTH / 4, 3 * LENGTH / 4).toArray();
+        public static final int[] ALL_IDXS = IntStream.range(0, LENGTH).toArray();
     }
 }

@@ -233,5 +233,10 @@ public class Shooter extends NAR_PIDSubsystem {
         return ShooterConstants.shooterSpeedsMap.getInterpolated(new InterpolatingDouble(dist)).value + ratio;
         // return -1.43648019e-3*dist*dist*dist + 4.42551199e-1*dist*dist - 3.02450570e1*dist + 3.16957933e3 - 100;
     }
+
+    @Override
+    public boolean isReady() {
+        return plateauCount >= ShooterConstants.PLATEAU_COUNT && getSetpoint() != 0;
+    }
 }
 

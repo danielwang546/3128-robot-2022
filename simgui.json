@@ -1,5 +1,10 @@
 {
   "HALProvider": {
+    "Addressable LEDs": {
+      "window": {
+        "visible": true
+      }
+    },
     "Other Devices": {
       "Talon FX[0]": {
         "header": {
@@ -35,13 +40,6 @@
       "/SmartDashboard/NAR_Drivetrain": "Subsystem",
       "/SmartDashboard/Scheduler": "Scheduler",
       "/SmartDashboard/Shooter": "Subsystem"
-    },
-    "windows": {
-      "/SmartDashboard/Field": {
-        "window": {
-          "visible": true
-        }
-      }
     }
   },
   "NetworkTables": {

@@ -3,18 +3,25 @@ package frc.team3128.subsystems;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.team3128.Constants.LEDConstants.*;
 
+/**
+ * @author Daniel Wang, Kanvar Soin
+ */
 public class LED extends SubsystemBase {
 
     public enum LEDState {
         RAINBOW,
         RED,
         BLUE,
+        GREEN,
+        ORANGE,
+        RED_ALLIANCE,
+        BLUE_ALLIANCE,
         SCANNER,
         CHASE,
         COLORWIPE_GREEN,
@@ -22,7 +29,9 @@ public class LED extends SubsystemBase {
     }
 
     private static LED instance;
-    private LEDState state = LEDState.HORSE_RACE;
+
+    private LEDState topHalfState = LEDState.CHASE;
+    private LEDState bottomHalfState = LEDState.CHASE;
 
     private AddressableLED ledStrip;
     private AddressableLEDBuffer ledBuffer;
@@ -56,12 +65,29 @@ public class LED extends SubsystemBase {
         return instance;
     }
 
-    public void setState(LEDState state) {
-        this.state = state;   
+    public void setTopState(LEDState state) {
+        topHalfState = state;   
     }
 
-    private void rainbow() {
-        for (int i = 0; i < LENGTH; i++) {
+    public void setBottomState(LEDState state) {
+        bottomHalfState = state;
+    }
+
+    public void defaultState() {
+        if (DriverStation.getAlliance() == DriverStation.Alliance.Red) {
+            setTopState(LEDState.RED_ALLIANCE);
+            setBottomState(LEDState.RED_ALLIANCE);
+        } else if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) {
+            setTopState(LEDState.BLUE_ALLIANCE);
+            setBottomState(LEDState.BLUE_ALLIANCE);
+        } else {
+            setTopState(LEDState.CHASE);
+            setBottomState(LEDState.CHASE);
+        }
+    }
+
+    private void rainbow(int[] idxs) {
+        for (int i : idxs) {
             final var hue = (m_rainbowFirstPixelHue + (i * 180 / LENGTH)) % 180;
             ledBuffer.setHSV(i, hue, 255, 128);
         }
@@ -71,8 +97,8 @@ public class LED extends SubsystemBase {
         
     }
 
-    private void solidColor(Color color) {
-        for (int i = 0; i < LENGTH; i++) {
+    private void solidColor(int[] idxs, Color color) {
+        for (int i : idxs) {
             ledBuffer.setLED(i, color);
         }
         
@@ -82,15 +108,12 @@ public class LED extends SubsystemBase {
 
     }
 
-    private void scanner() {
-        for(int i = 0; i < LENGTH; i++) {
+    private void scanner(int[] idxs) {
+        for(int i : idxs) {
             double distFromEye = MathUtil.clamp(Math.abs(eyePos - i), 0, LENGTH - 1);
             double intensity = 1 - (double)distFromEye / LENGTH;
-            double red =  MathUtil.interpolate(BACKGROUND_COLOR.red, EYE_COLOR.red, intensity);
-            double green = MathUtil.interpolate(BACKGROUND_COLOR.green, EYE_COLOR.green, intensity);
-            double blue = MathUtil.interpolate(BACKGROUND_COLOR.blue, EYE_COLOR.blue, intensity);
 
-            ledBuffer.setLED(i, new Color(red, green, blue));
+            ledBuffer.setLED(i, cInterp(BACKGROUND_COLOR, EYE_COLOR, intensity));
         }
         if (eyePos == 0) {
             scanDirection = 1;
@@ -101,33 +124,32 @@ public class LED extends SubsystemBase {
 
         eyePos += scanDirection;
     }
-
-    private void chase() {
+    
+    private void chase(int[] idxs, Color c1, Color c2) {
         zeroPos += CHASE_SPEED;
 
-        for (int i = 0; i < LENGTH; i++) {
+        for (int i : idxs) {
             double pctDownStrip = (double)i / LENGTH;
             double numCycles = (double)LENGTH / STRIPE_WIDTH / 2;
 
             double colorBump = 0.5 * Math.sin(2 * Math.PI * numCycles * (pctDownStrip-zeroPos)) + 0.5;
 
             colorBump *= colorBump;
-            colorBump *= 255;
 
-            ledBuffer.setRGB(i, (int)colorBump, (int)colorBump, 255);
+            ledBuffer.setLED(i, cInterp(c1, c2, colorBump));
         }
     }
 
-    private void colorWipe(Color color) {
-        colorWipe(color, Color.kBlack);
+    private void colorWipe(int[] idxs, Color color) {
+        colorWipe(idxs, color, Color.kBlack);
     }
 
-    private void colorWipe(Color color1, Color color2) {
-        for (int i = 0; i < LENGTH; i++) {
+    private void colorWipe(int[] idxs, Color c1, Color c2) {
+        for (int i : idxs) {
             if (i >= wipeCurrPos && i < wipeCurrPos + LENGTH) {
-                ledBuffer.setLED(i, color1);
+                ledBuffer.setLED(i, c1);
             } else {
-                ledBuffer.setLED(i, color2);
+                ledBuffer.setLED(i, c2);
             }
         }
 
@@ -137,8 +159,8 @@ public class LED extends SubsystemBase {
         }
     }
 
-    private void sevenColorHorseRace() {
-        for (int i = 0; i < LENGTH; i++) {
+    private void sevenColorHorseRace(int[] idxs) {
+        for (int i : idxs) {
             ledBuffer.setLED(i, Color.kBlack);
 
             for (int j = 0; j < 7; j++) {
@@ -158,33 +180,134 @@ public class LED extends SubsystemBase {
     @Override
     public void periodic() {
 
-        switch(state) {
-            case RAINBOW:
-                rainbow();
-                break;
-            case RED:
-                solidColor(Color.kDarkRed);
-                break;
-            case BLUE:
-                solidColor(Color.kRoyalBlue);
-                break;
-            case SCANNER:
-                scanner();
-                break;
-            case CHASE:
-                chase();
-                break;
-            case COLORWIPE_GREEN:
-                colorWipe(Color.kGreen);
-                break;
-            case HORSE_RACE:
-                sevenColorHorseRace();
-                break;
+        if (topHalfState == bottomHalfState) 
+        {
+            switch(topHalfState) {
+                case RAINBOW:
+                    rainbow(ALL_IDXS);
+                    break;
+                case RED:
+                    solidColor(ALL_IDXS, Color.kDarkRed);
+                    break;
+                case BLUE:
+                    solidColor(ALL_IDXS, Color.kRoyalBlue);
+                    break;
+                case GREEN:
+                    solidColor(ALL_IDXS, Color.kSpringGreen);
+                    break;
+                case ORANGE:
+                    solidColor(ALL_IDXS, Color.kDarkOrange);
+                case SCANNER:
+                    scanner(ALL_IDXS);
+                    break;
+                case CHASE:
+                    chase(ALL_IDXS, Color.kBlue, Color.kWhite);
+                    break;
+                case COLORWIPE_GREEN:
+                    colorWipe(ALL_IDXS, Color.kGreen);
+                    break;
+                case HORSE_RACE:
+                    sevenColorHorseRace(ALL_IDXS);
+                    break;
+                case RED_ALLIANCE:
+                    chase(ALL_IDXS, Color.kFirstRed, Color.kWhite);
+                    break;
+                case BLUE_ALLIANCE:
+                    chase(ALL_IDXS, Color.kFirstBlue, Color.kWhite);
+                    break;
+            }
+        }
+        else
+        {
+            switch(topHalfState) {
+                case RAINBOW:
+                    rainbow(TOP_IDXS);
+                    break;
+                case RED:
+                    solidColor(TOP_IDXS, Color.kDarkRed);
+                    break;
+                case BLUE:
+                    solidColor(TOP_IDXS, Color.kRoyalBlue);
+                    break;
+                case GREEN:
+                    solidColor(TOP_IDXS, Color.kSpringGreen);
+                    break;
+                case ORANGE:
+                    solidColor(TOP_IDXS, Color.kDarkOrange);
+                case SCANNER:
+                    scanner(TOP_IDXS);
+                    break;
+                case CHASE:
+                    chase(TOP_IDXS, Color.kBlue, Color.kWhite);
+                    break;
+                case COLORWIPE_GREEN:
+                    colorWipe(TOP_IDXS, Color.kGreen);
+                    break;
+                case HORSE_RACE:
+                    sevenColorHorseRace(TOP_IDXS);
+                    break;
+                case RED_ALLIANCE:
+                    chase(TOP_IDXS, Color.kFirstRed, Color.kWhite);
+                    break;
+                case BLUE_ALLIANCE:
+                    chase(TOP_IDXS, Color.kFirstBlue, Color.kWhite);
+                    break;
+            }
+
+            switch(bottomHalfState) {
+                case RAINBOW:
+                    rainbow(BOTTOM_IDXS);
+                    break;
+                case RED:
+                    solidColor(BOTTOM_IDXS, Color.kDarkRed);
+                    break;
+                case BLUE:
+                    solidColor(BOTTOM_IDXS, Color.kRoyalBlue);
+                    break;
+                case GREEN:
+                    solidColor(BOTTOM_IDXS, Color.kSpringGreen);
+                    break;
+                case ORANGE:
+                    solidColor(BOTTOM_IDXS, Color.kDarkOrange);
+                case SCANNER:
+                    scanner(BOTTOM_IDXS);
+                    break;
+                case CHASE:
+                    chase(BOTTOM_IDXS, Color.kBlue, Color.kWhite);
+                    break;
+                case COLORWIPE_GREEN:
+                    colorWipe(BOTTOM_IDXS, Color.kGreen);
+                    break;
+                case HORSE_RACE:
+                    sevenColorHorseRace(BOTTOM_IDXS);
+                    break;
+                case RED_ALLIANCE:
+                    chase(BOTTOM_IDXS, Color.kFirstRed, Color.kWhite);
+                    break;
+                case BLUE_ALLIANCE:
+                    chase(BOTTOM_IDXS, Color.kFirstBlue, Color.kWhite);
+                    break;
+            }
         }
 
-        SmartDashboard.putString("LED State", state.toString());
+        
 
         ledStrip.setData(ledBuffer);
     }
 
+    /**
+     * Returns a color in between c1 and c2 using RGB interpolation.
+     * @param c1 Color to start at (t=0)
+     * @param c2 Color to end at (t=1)
+     * @param t How far between the values to interpolate, clamped at [0, 1]
+     * @return
+     */
+    private Color cInterp(Color c1, Color c2, double t) {
+        t = MathUtil.clamp(t, 0, 1);
+
+        return new Color(
+            MathUtil.interpolate(c1.red, c2.red, t), 
+            MathUtil.interpolate(c1.green, c2.green, t), 
+            MathUtil.interpolate(c1.blue, c2.blue, t));
+    }
 }

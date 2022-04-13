@@ -12,7 +12,9 @@ import frc.team3128.Constants.VisionConstants;
 import frc.team3128.common.hardware.limelight.LEDMode;
 import frc.team3128.common.hardware.limelight.Limelight;
 import frc.team3128.common.hardware.limelight.LimelightKey;
+import frc.team3128.subsystems.LED;
 import frc.team3128.subsystems.NAR_Drivetrain;
+import frc.team3128.subsystems.LED.LEDState;
 
 
 public class CmdAlign extends CommandBase {
@@ -23,6 +25,7 @@ public class CmdAlign extends CommandBase {
 
     private NAR_Drivetrain m_drive;
     private Limelight m_limelight;
+    private LED m_led;
     private Set<Subsystem> requirements;
 
     private double txThreshold = VisionConstants.TX_THRESHOLD;
@@ -36,7 +39,7 @@ public class CmdAlign extends CommandBase {
     private HorizontalOffsetFeedBackDriveState aimState = HorizontalOffsetFeedBackDriveState.SEARCHING;
 
 
-    public CmdAlign(NAR_Drivetrain drive, Limelight limelight) {
+    public CmdAlign(NAR_Drivetrain drive, Limelight limelight, LED led) {
         m_drive = drive;
         m_limelight = limelight;
         goalHorizontalOffset = VisionConstants.TX_OFFSET;
@@ -108,6 +111,12 @@ public class CmdAlign extends CommandBase {
                 
         }
         prevTime = currTime;
+
+        if (isAligned)
+            m_led.setBottomState(LEDState.GREEN);
+        else
+            m_led.setBottomState(LEDState.ORANGE);
+
         SmartDashboard.putBoolean("Shooter isAligned", isAligned);
     }
 
