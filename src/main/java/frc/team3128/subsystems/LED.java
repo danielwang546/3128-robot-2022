@@ -32,8 +32,8 @@ public class LED extends SubsystemBase {
 
     private static LED instance;
 
-    private LEDState topHalfState = LEDState.COLORWIPE_GREEN;
-    private LEDState bottomHalfState = LEDState.RED_ALLIANCE;
+    private LEDState topHalfState = LEDState.CHASE;
+    private LEDState bottomHalfState = LEDState.CHASE;
 
     private AddressableLED ledStrip;
     private AddressableLEDBuffer ledBuffer;
@@ -209,6 +209,7 @@ public class LED extends SubsystemBase {
                     break;
                 case ORANGE:
                     solidColor(ALL_IDXS, Color.kDarkOrange);
+                    break;
                 case SCANNER:
                     scanner(ALL_IDXS);
                     break;

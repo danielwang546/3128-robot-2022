@@ -320,7 +320,7 @@ public class Constants {
     }
 
     public static class LEDConstants {
-        public static final int LED_PORT = 9;
+        public static final int LED_PORT = 8;
         public static final int LENGTH = 120;
 
         public static final Color EYE_COLOR = Color.kFirstRed;

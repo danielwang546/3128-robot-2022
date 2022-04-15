@@ -41,6 +41,7 @@ public class CmdAlign extends CommandBase {
 
     public CmdAlign(NAR_Drivetrain drive, Limelight limelight, LED led) {
         m_drive = drive;
+        m_led = led;
         m_limelight = limelight;
         goalHorizontalOffset = VisionConstants.TX_OFFSET;
         isAligned = false;
