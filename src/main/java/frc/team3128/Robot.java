@@ -19,9 +19,6 @@ public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
     // private Thread dashboardUpdateThread;
 
-    // private ArrayList<Double> battVoltages = new ArrayList<Double>();
-    // public static double voltageRollingAvg = 0;
-
     @Override
     public void robotInit() {
         LiveWindow.disableAllTelemetry();
@@ -31,17 +28,6 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         m_robotContainer.updateDashboard();
-
-        // if(battVoltages.size() == 100) {
-        //     battVoltages.remove(0);
-        // }
-        // battVoltages.add(RobotController.getBatteryVoltage());
-
-        // for (double d : battVoltages) {
-        //     voltageRollingAvg += d;
-        // }
-        // voltageRollingAvg /= battVoltages.size();
-
     }
 
     @Override
