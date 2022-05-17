@@ -1,6 +1,7 @@
 package frc.team3128.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 
 import frc.team3128.Constants.ShooterConstants;
@@ -98,6 +99,13 @@ public class Shooter extends NAR_PIDSubsystem {
 
         m_rightShooter.follow((NAR_EMotor) m_leftShooter);
 
+        // set CAN status frame periods
+        m_rightShooter.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, 255);
+        m_rightShooter.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 255);
+        
+        m_leftShooter.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, 17);
+        m_leftShooter.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 47);
+
         m_leftShooter.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 15, 30, 0.1));
     }
 
@@ -132,6 +140,7 @@ public class Shooter extends NAR_PIDSubsystem {
      */
     public void startPID(double rpm) {
         thresholdPercent = ShooterConstants.RPM_THRESHOLD_PERCENT;
+        // rpm = ConstantsInt.ShooterConstants.SET_RPM;
         super.setSetpoint(rpm);  
         // super.resetPlateauCount();
         getController().setTolerance(ShooterConstants.RPM_THRESHOLD_PERCENT * rpm);
